@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <title>Word Pronunciation Practice</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <h1>Word Pronunciation Practice</h1>
+      <p class="subtitle">Add an English word, listen, record your pronunciation, and get a score.</p>
+
+      <section class="input-row" aria-label="Add word section">
+        <input id="wordInput" type="text" inputmode="latin" autocapitalize="none" autocomplete="off" placeholder="Enter an English word" maxlength="32" />
+        <button id="addWordBtn" type="button">Add Word</button>
+      </section>
+
+      <p id="supportInfo" class="support-info" role="status" aria-live="polite"></p>
+
+      <ul id="wordList" class="word-list" aria-label="Word list"></ul>
+    </main>
+
+    <template id="wordItemTemplate">
+      <li class="word-item">
+        <span class="word-text"></span>
+        <div class="actions">
+          <button type="button" class="speak-btn">Hear</button>
+          <button type="button" class="record-btn">Record</button>
+          <button type="button" class="delete-btn" aria-label="Delete word">Delete</button>
+        </div>
+        <p class="result" aria-live="polite"></p>
+      </li>
+    </template>
+
+    <script src="script.js"></script>
+  </body>
+</html>
