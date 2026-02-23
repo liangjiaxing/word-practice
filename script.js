@@ -4,7 +4,6 @@ const addWordBtn = document.getElementById("addWordBtn");
 const wordList = document.getElementById("wordList");
 const supportInfo = document.getElementById("supportInfo");
 const itemTemplate = document.getElementById("wordItemTemplate");
-const maxListenMs = 1800;
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -79,32 +78,11 @@ function scorePronunciation(targetWord, recordBtn, resultNode) {
   recognition.lang = "en-US";
   recognition.interimResults = false;
   recognition.maxAlternatives = 3;
-  if ("continuous" in recognition) recognition.continuous = false;
-
-  let stopTimer = null;
-  let didReceiveResult = false;
-
-  const clearStopTimer = () => {
-    if (stopTimer) {
-      clearTimeout(stopTimer);
-      stopTimer = null;
-    }
-  };
 
   recordBtn.disabled = true;
-  resultNode.textContent = "Listening (max 2s)...";
-
-  stopTimer = setTimeout(() => {
-    try {
-      recognition.stop();
-    } catch {
-      // Ignore stop errors if recognition already ended.
-    }
-  }, maxListenMs);
+  resultNode.textContent = "Listening...";
 
   recognition.onresult = (event) => {
-    didReceiveResult = true;
-    clearStopTimer();
     const target = normalizeForScore(targetWord);
     const candidates = [];
 
@@ -117,7 +95,6 @@ function scorePronunciation(targetWord, recordBtn, resultNode) {
   };
 
   recognition.onerror = (event) => {
-    clearStopTimer();
     const message = event.error === "not-allowed"
       ? "Microphone permission denied. Please allow mic access in browser settings."
       : `Recognition failed: ${event.error}`;
@@ -125,11 +102,7 @@ function scorePronunciation(targetWord, recordBtn, resultNode) {
   };
 
   recognition.onend = () => {
-    clearStopTimer();
     recordBtn.disabled = false;
-    if (!didReceiveResult && resultNode.textContent.startsWith("Listening")) {
-      resultNode.textContent = "No speech detected within 2 seconds. Try again.";
-    }
   };
 
   recognition.start();
