@@ -80,7 +80,9 @@ function scorePronunciation(targetWord, recordBtn, resultNode) {
   recognition.interimResults = false;
   recognition.maxAlternatives = 3;
   let hasResult = false;
+  let hasStarted = false;
   let stopRequested = false;
+  let errorCode = "";
   let forceStopTimer = null;
 
   const stopRecognition = () => {
@@ -94,7 +96,14 @@ function scorePronunciation(targetWord, recordBtn, resultNode) {
   };
 
   recordBtn.disabled = true;
-  resultNode.textContent = "Listening...";
+  resultNode.textContent = "Preparing microphone...";
+
+  recognition.onstart = () => {
+    hasStarted = true;
+    resultNode.textContent = "Listening... Speak now.";
+    // Start timeout only after recognition actually begins listening.
+    forceStopTimer = setTimeout(stopRecognition, 8000);
+  };
 
   recognition.onresult = (event) => {
     hasResult = true;
@@ -111,9 +120,14 @@ function scorePronunciation(targetWord, recordBtn, resultNode) {
   };
 
   recognition.onerror = (event) => {
+    errorCode = event.error;
     const message = event.error === "not-allowed"
       ? "Microphone permission denied. Please allow mic access in browser settings."
-      : `Recognition failed: ${event.error}`;
+      : event.error === "no-speech"
+        ? "No speech detected. Please speak louder or move closer to the microphone."
+        : event.error === "audio-capture"
+          ? "No microphone detected. Please check your microphone/device settings."
+          : `Recognition failed: ${event.error}`;
     resultNode.textContent = message;
   };
 
@@ -123,15 +137,15 @@ function scorePronunciation(targetWord, recordBtn, resultNode) {
 
   recognition.onend = () => {
     if (forceStopTimer) clearTimeout(forceStopTimer);
-    if (!hasResult && !resultNode.textContent.startsWith("Recognition failed") && !resultNode.textContent.startsWith("Microphone permission denied")) {
+    if (!hasStarted) {
+      resultNode.textContent = "Microphone failed to start. Try Chrome/Safari over HTTPS or localhost.";
+    } else if (!hasResult && !errorCode) {
       resultNode.textContent = "No speech detected. Try again.";
     }
     recordBtn.disabled = false;
   };
 
   recognition.start();
-  // Fallback: avoid hanging too long on browsers with slow end-of-speech detection.
-  forceStopTimer = setTimeout(stopRecognition, 5000);
 }
 
 function pickBestCandidate(target, candidateTexts) {
