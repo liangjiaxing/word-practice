@@ -131,7 +131,7 @@ function scorePronunciation(targetWord, recordBtn, resultNode) {
 
   recognition.start();
   // Fallback: avoid hanging too long on browsers with slow end-of-speech detection.
-  forceStopTimer = setTimeout(stopRecognition, 2500);
+  forceStopTimer = setTimeout(stopRecognition, 5000);
 }
 
 function pickBestCandidate(target, candidateTexts) {
