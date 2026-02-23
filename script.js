@@ -76,13 +76,28 @@ function scorePronunciation(targetWord, recordBtn, resultNode) {
 
   const recognition = new SpeechRecognition();
   recognition.lang = "en-US";
+  recognition.continuous = false;
   recognition.interimResults = false;
   recognition.maxAlternatives = 3;
+  let hasResult = false;
+  let stopRequested = false;
+  let forceStopTimer = null;
+
+  const stopRecognition = () => {
+    if (stopRequested) return;
+    stopRequested = true;
+    try {
+      recognition.stop();
+    } catch {
+      // Some browsers throw if stop() is called before start completes.
+    }
+  };
 
   recordBtn.disabled = true;
   resultNode.textContent = "Listening...";
 
   recognition.onresult = (event) => {
+    hasResult = true;
     const target = normalizeForScore(targetWord);
     const candidates = [];
 
@@ -92,6 +107,7 @@ function scorePronunciation(targetWord, recordBtn, resultNode) {
 
     const best = pickBestCandidate(target, candidates);
     resultNode.textContent = `You said: "${best.original}" | Score: ${best.score}/100`;
+    stopRecognition();
   };
 
   recognition.onerror = (event) => {
@@ -101,11 +117,21 @@ function scorePronunciation(targetWord, recordBtn, resultNode) {
     resultNode.textContent = message;
   };
 
+  recognition.onspeechend = () => {
+    stopRecognition();
+  };
+
   recognition.onend = () => {
+    if (forceStopTimer) clearTimeout(forceStopTimer);
+    if (!hasResult && !resultNode.textContent.startsWith("Recognition failed") && !resultNode.textContent.startsWith("Microphone permission denied")) {
+      resultNode.textContent = "No speech detected. Try again.";
+    }
     recordBtn.disabled = false;
   };
 
   recognition.start();
+  // Fallback: avoid hanging too long on browsers with slow end-of-speech detection.
+  forceStopTimer = setTimeout(stopRecognition, 2500);
 }
 
 function pickBestCandidate(target, candidateTexts) {
