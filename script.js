@@ -15,7 +15,7 @@ fetch("words.txt")
   .then((response) => response.text())
   .then((text) => {
     state.words = text
-      .split("\n")
+      .split(/[\n\s]+/)
       .map((w) => w.trim().toLowerCase())
       .filter((w) => w.length > 0);
     renderList();
