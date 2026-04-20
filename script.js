@@ -1,6 +1,3 @@
-const storageKey = "pronunciation_words_v1";
-const wordInput = document.getElementById("wordInput");
-const addWordBtn = document.getElementById("addWordBtn");
 const wordList = document.getElementById("wordList");
 const supportInfo = document.getElementById("supportInfo");
 const itemTemplate = document.getElementById("wordItemTemplate");
@@ -8,30 +5,24 @@ const itemTemplate = document.getElementById("wordItemTemplate");
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
 const state = {
-  words: loadWords(),
+  words: [],
 };
 
-renderList();
 setSupportMessage();
 
-addWordBtn.addEventListener("click", addWordFromInput);
-wordInput.addEventListener("keydown", (event) => {
-  if (event.key === "Enter") addWordFromInput();
-});
-
-function addWordFromInput() {
-  const value = cleanWord(wordInput.value);
-  if (!value) return;
-
-  if (!state.words.includes(value)) {
-    state.words.push(value);
-    saveWords();
+// Load words from words.txt
+fetch("words.txt")
+  .then((response) => response.text())
+  .then((text) => {
+    state.words = text
+      .split("\n")
+      .map((w) => w.trim().toLowerCase())
+      .filter((w) => w.length > 0);
     renderList();
-  }
-
-  wordInput.value = "";
-  wordInput.focus();
-}
+  })
+  .catch(() => {
+    supportInfo.textContent = "Failed to load words.txt";
+  });
 
 function renderList() {
   wordList.innerHTML = "";
@@ -41,14 +32,12 @@ function renderList() {
     const wordText = node.querySelector(".word-text");
     const speakBtn = node.querySelector(".speak-btn");
     const recordBtn = node.querySelector(".record-btn");
-    const deleteBtn = node.querySelector(".delete-btn");
     const result = node.querySelector(".result");
 
     wordText.textContent = word;
 
     speakBtn.addEventListener("click", () => speakWord(word));
     recordBtn.addEventListener("click", () => scorePronunciation(word, recordBtn, result));
-    deleteBtn.addEventListener("click", () => removeWord(word));
 
     item.dataset.word = word;
     wordList.appendChild(node);
@@ -193,12 +182,6 @@ function levenshteinDistance(a, b) {
   return table[a.length][b.length];
 }
 
-function removeWord(wordToRemove) {
-  state.words = state.words.filter((word) => word !== wordToRemove);
-  saveWords();
-  renderList();
-}
-
 function setSupportMessage() {
   const supportsSpeech = Boolean(window.speechSynthesis);
   const supportsRecognition = Boolean(SpeechRecognition);
@@ -216,23 +199,6 @@ function setSupportMessage() {
   supportInfo.textContent = "Speech features are limited on this browser. Try the latest Safari or Chrome.";
 }
 
-function cleanWord(value) {
-  return value.trim().toLowerCase().replace(/\s+/g, " ");
-}
-
 function normalizeForScore(value) {
   return value.toLowerCase().replace(/[^a-z\s']/g, "").replace(/\s+/g, " ").trim();
-}
-
-function loadWords() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(storageKey));
-    return Array.isArray(saved) ? saved : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveWords() {
-  localStorage.setItem(storageKey, JSON.stringify(state.words));
 }
