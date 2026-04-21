@@ -46,6 +46,7 @@ h1 {
   grid-template-columns: 1fr auto;
   gap: 10px;
   margin-bottom: 12px;
+  max-width: 100%;
 }
 
 input,
@@ -60,6 +61,7 @@ input {
   padding: 12px;
   background: #fff;
   font-size: 16px;
+  max-width: 100%;
 }
 
 button {

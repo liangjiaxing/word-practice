@@ -1,14 +1,17 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { addSentence } from "../actions";
 
 export default function AddSentenceForm() {
   const formRef = useRef<HTMLFormElement>(null);
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(formData: FormData) {
+    setLoading(true);
     await addSentence(formData);
     formRef.current?.reset();
+    setLoading(false);
   }
 
   return (
@@ -16,16 +19,12 @@ export default function AddSentenceForm() {
       <input
         name="sentence"
         type="text"
-        placeholder="日语句子（例：今日はいい天気です）"
+        placeholder="输入日语句子（例：今日はいい天気です）"
         required
       />
-      <input
-        name="translation"
-        type="text"
-        placeholder="中文翻译（例：今天天气很好）"
-        required
-      />
-      <button type="submit">添加句子</button>
+      <button type="submit" disabled={loading}>
+        {loading ? "翻译中..." : "添加句子"}
+      </button>
     </form>
   );
 }

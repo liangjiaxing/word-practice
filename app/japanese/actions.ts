@@ -15,8 +15,19 @@ export async function getSentences() {
 
 export async function addSentence(formData: FormData) {
   const sentence = (formData.get("sentence") as string)?.trim();
-  const translation = (formData.get("translation") as string)?.trim();
-  if (!sentence || !translation) return;
+  if (!sentence) return;
+
+  // Auto translate Japanese → Chinese
+  let translation = "";
+  try {
+    const res = await fetch(
+      `https://api.mymemory.translated.net/get?q=${encodeURIComponent(sentence)}&langpair=ja|zh-CN`
+    );
+    const data = await res.json();
+    translation = data.responseData?.translatedText || "";
+  } catch {
+    translation = "(翻译失败)";
+  }
 
   const { error } = await supabase
     .from("japanese_sentences")
