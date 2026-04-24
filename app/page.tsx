@@ -9,7 +9,7 @@ export default async function Home() {
   const { data: words } = await supabase
     .from("words")
     .select("id, word")
-    .order("created_at", { ascending: true });
+    .order("created_at", { ascending: false });
 
   return (
     <main className="app">
