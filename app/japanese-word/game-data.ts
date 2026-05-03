@@ -206,20 +206,28 @@ export function buildQuestion(
 ): JapaneseWordQuestion {
   const verb = deck[Math.floor(random() * deck.length)] ?? deck[0];
   const answer = verb.forms[type];
-  const distractorPool = deck
+
+  const sameVerbDistractors = getSameVerbDistractors(verb, type);
+  const relatedVerbDistractors = deck
     .filter((entry) => entry.dictionary !== verb.dictionary)
-    .map((entry) => entry.forms[type])
+    .flatMap((entry) => [entry.forms[type], ...getSameVerbDistractors(entry, type)])
     .filter((form, index, forms) => form !== answer && forms.indexOf(form) === index);
 
-  const distractors: string[] = [];
-  while (distractors.length < 3 && distractorPool.length > distractors.length) {
-    const candidate = distractorPool[Math.floor(random() * distractorPool.length)];
-    if (candidate && !distractors.includes(candidate)) {
-      distractors.push(candidate);
-    }
-  }
+  const distractors = [
+    ...pickUnique(sameVerbDistractors, 3, random),
+    ...pickUnique(relatedVerbDistractors, 3, random),
+  ]
+    .filter((form, index, forms) => form !== answer && forms.indexOf(form) === index)
+    .slice(0, 3);
 
-  const choices = shuffle([answer, ...distractors].slice(0, 4), random);
+  const fallbackChoices = [answer, verb.dictionary, ...sameVerbDistractors, ...relatedVerbDistractors]
+    .filter((form, index, forms) => form && forms.indexOf(form) === index)
+    .slice(0, 4);
+
+  const choices = shuffle(
+    (distractors.length === 3 ? [answer, ...distractors] : fallbackChoices).slice(0, 4),
+    random
+  );
 
   return {
     verb,
@@ -230,10 +238,39 @@ export function buildQuestion(
   };
 }
 
+function getSameVerbDistractors(
+  verb: JapaneseVerbEntry,
+  targetType: ConjugationType
+): string[] {
+  return getAvailableConjugationTypes()
+    .filter((type) => type !== targetType)
+    .map((type) => verb.forms[type])
+    .filter((form, index, forms) => form && forms.indexOf(form) === index);
+}
+
+function pickUnique<T>(items: T[], count: number, random: () => number): T[] {
+  const pool = [...items];
+  const picked: T[] = [];
+
+  while (pool.length > 0 && picked.length < count) {
+    const raw = random();
+    const normalized = Number.isFinite(raw) ? raw : 0;
+    const index = Math.max(0, Math.min(pool.length - 1, Math.floor(normalized * pool.length)));
+    const [candidate] = pool.splice(index, 1);
+    if (candidate !== undefined) {
+      picked.push(candidate);
+    }
+  }
+
+  return picked;
+}
+
 function shuffle<T>(items: T[], random: () => number): T[] {
   const copy = [...items];
   for (let i = copy.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(random() * (i + 1));
+    const raw = random();
+    const normalized = Number.isFinite(raw) ? raw : 0;
+    const j = Math.max(0, Math.min(i, Math.floor(normalized * (i + 1))));
     [copy[i], copy[j]] = [copy[j], copy[i]];
   }
   return copy;
