@@ -12,15 +12,22 @@ import {
 } from "./game-data";
 
 const drillTypes = getAvailableConjugationTypes();
+type AnswerMode = "choice" | "input";
 
 function createQuestion(type: ConjugationType) {
   return buildQuestion(japaneseWordDeck, type);
 }
 
+function normalizeAnswer(value: string) {
+  return value.replace(/\s+/g, "").trim();
+}
+
 export default function JapaneseWordGame() {
   const [activeType, setActiveType] = useState<ConjugationType>(drillTypes[0]);
+  const [answerMode, setAnswerMode] = useState<AnswerMode>("choice");
   const [question, setQuestion] = useState<JapaneseWordQuestion>(() => createQuestion(drillTypes[0]));
   const [selected, setSelected] = useState<string | null>(null);
+  const [typedAnswer, setTypedAnswer] = useState("");
   const [correctCount, setCorrectCount] = useState(0);
   const [answeredCount, setAnsweredCount] = useState(0);
 
@@ -34,26 +41,46 @@ export default function JapaneseWordGame() {
       : `回答错误。正确答案是 ${question.answer}。`;
   }, [isCorrect, question, selected]);
 
+  function resetAnswerState() {
+    setSelected(null);
+    setTypedAnswer("");
+  }
+
   function chooseType(type: ConjugationType) {
     setActiveType(type);
     setQuestion(createQuestion(type));
-    setSelected(null);
+    resetAnswerState();
     setCorrectCount(0);
     setAnsweredCount(0);
   }
 
-  function handleChoice(choice: string) {
+  function chooseMode(mode: AnswerMode) {
+    setAnswerMode(mode);
+    resetAnswerState();
+  }
+
+  function finishAnswer(answer: string) {
     if (isAnswered) return;
-    setSelected(choice);
+    setSelected(answer);
     setAnsweredCount((count) => count + 1);
-    if (choice === question.answer) {
+    if (answer === question.answer) {
       setCorrectCount((count) => count + 1);
     }
   }
 
+  function handleChoice(choice: string) {
+    finishAnswer(choice);
+  }
+
+  function submitTypedAnswer() {
+    const normalized = normalizeAnswer(typedAnswer);
+    if (!normalized || isAnswered) return;
+    finishAnswer(normalized);
+  }
+
   function nextQuestion() {
     setQuestion(createQuestion(activeType));
-    setSelected(null);
+    resetAnswerState();
   }
 
   return (
@@ -81,6 +108,23 @@ export default function JapaneseWordGame() {
           ))}
         </div>
         <p className="jw-current-type">当前练习：{conjugationTypeLabels[activeType]}</p>
+
+        <div className="jw-mode-row" role="group" aria-label="answer mode selector">
+          <button
+            type="button"
+            className={answerMode === "choice" ? "jw-chip active" : "jw-chip"}
+            onClick={() => chooseMode("choice")}
+          >
+            选择模式
+          </button>
+          <button
+            type="button"
+            className={answerMode === "input" ? "jw-chip active" : "jw-chip"}
+            onClick={() => chooseMode("input")}
+          >
+            输入模式
+          </button>
+        </div>
       </section>
 
       <section className="jw-card" aria-live="polite">
@@ -88,32 +132,59 @@ export default function JapaneseWordGame() {
         <div className="jw-word">{question.verb.dictionary}</div>
         <div className="jw-meaning">意思：{question.verb.meaning}</div>
 
-        <div className="jw-choice-grid">
-          {question.choices.map((choice) => {
-            const isChoiceCorrect = choice === question.answer;
-            const stateClass = !isAnswered
-              ? ""
-              : isChoiceCorrect
-                ? " correct"
-                : choice === selected
-                  ? " wrong"
-                  : "";
+        {answerMode === "choice" ? (
+          <div className="jw-choice-grid">
+            {question.choices.map((choice) => {
+              const isChoiceCorrect = choice === question.answer;
+              const stateClass = !isAnswered
+                ? ""
+                : isChoiceCorrect
+                  ? " correct"
+                  : choice === selected
+                    ? " wrong"
+                    : "";
 
-            return (
-              <button
-                key={choice}
-                type="button"
-                data-choice="true"
-                data-correct={isChoiceCorrect ? "true" : "false"}
-                className={`jw-choice${stateClass}`}
-                onClick={() => handleChoice(choice)}
-                disabled={isAnswered}
-              >
-                {choice}
-              </button>
-            );
-          })}
-        </div>
+              return (
+                <button
+                  key={choice}
+                  type="button"
+                  data-choice="true"
+                  data-correct={isChoiceCorrect ? "true" : "false"}
+                  className={`jw-choice${stateClass}`}
+                  onClick={() => handleChoice(choice)}
+                  disabled={isAnswered}
+                >
+                  {choice}
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="jw-input-area">
+            <input
+              type="text"
+              className="jw-input"
+              placeholder="输入你记住的变形"
+              value={typedAnswer}
+              onChange={(event) => setTypedAnswer(event.target.value)}
+              disabled={isAnswered}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  submitTypedAnswer();
+                }
+              }}
+            />
+            <button
+              type="button"
+              className="jw-submit-btn"
+              onClick={submitTypedAnswer}
+              disabled={isAnswered || !normalizeAnswer(typedAnswer)}
+            >
+              提交答案
+            </button>
+          </div>
+        )}
 
         <div className="jw-hint">
           <strong>记忆提示：</strong>

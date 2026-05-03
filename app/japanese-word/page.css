@@ -102,6 +102,13 @@ body {
   margin: 12px 0 0;
 }
 
+.jw-mode-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
 .jw-card {
   padding: 20px;
 }
@@ -135,6 +142,39 @@ body {
   background: #f4f6fd;
   color: var(--text);
   cursor: pointer;
+}
+
+.jw-input-area {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.jw-input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  background: #fff;
+  font: inherit;
+  font-size: 16px;
+}
+
+.jw-submit-btn {
+  min-height: 52px;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 12px;
+  background: var(--primary);
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+.jw-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .jw-choice.correct {
@@ -200,13 +240,15 @@ body {
     align-items: flex-start;
   }
 
-  .jw-choice-grid {
+  .jw-choice-grid,
+  .jw-input-area {
     grid-template-columns: 1fr;
   }
 
   .jw-choice,
   .jw-next-btn,
-  .jw-chip {
+  .jw-chip,
+  .jw-submit-btn {
     width: 100%;
   }
 }
