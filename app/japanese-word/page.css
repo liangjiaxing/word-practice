@@ -1,0 +1,212 @@
+:root {
+  color-scheme: light;
+  --bg: #f7f8fc;
+  --card: #ffffff;
+  --text: #13203a;
+  --muted: #5f6e8b;
+  --primary: #6c4ce1;
+  --primary-press: #5536cc;
+  --success-bg: #e7f8ef;
+  --success-text: #11653a;
+  --error-bg: #fdecec;
+  --error-text: #a43232;
+  --border: #d8deea;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: linear-gradient(180deg, #eef2fb 0%, var(--bg) 100%);
+  color: var(--text);
+  -webkit-text-size-adjust: 100%;
+}
+
+.jw-app {
+  width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+}
+
+.jw-app h1 {
+  margin: 0;
+  font-size: clamp(1.4rem, 4vw, 2rem);
+}
+
+.jw-subtitle {
+  margin: 10px 0 18px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.jw-panel,
+.jw-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(13, 35, 67, 0.08);
+}
+
+.jw-panel {
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.jw-panel-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.jw-progress,
+.jw-current-type,
+.jw-meaning,
+.jw-hint {
+  color: var(--muted);
+}
+
+.jw-chip-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.jw-chip,
+.jw-choice,
+.jw-next-btn {
+  border: none;
+  border-radius: 12px;
+  font: inherit;
+}
+
+.jw-chip {
+  min-height: 40px;
+  padding: 10px 14px;
+  background: #edf1fb;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.jw-chip.active {
+  background: var(--primary);
+  color: #fff;
+}
+
+.jw-current-type {
+  margin: 12px 0 0;
+}
+
+.jw-card {
+  padding: 20px;
+}
+
+.jw-card-topline {
+  font-size: 0.95rem;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.jw-word {
+  font-size: clamp(1.8rem, 6vw, 2.6rem);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.jw-meaning {
+  margin-bottom: 16px;
+}
+
+.jw-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.jw-choice {
+  padding: 14px;
+  min-height: 56px;
+  background: #f4f6fd;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.jw-choice.correct {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+.jw-choice.wrong {
+  background: var(--error-bg);
+  color: var(--error-text);
+}
+
+.jw-choice:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.jw-hint {
+  line-height: 1.5;
+}
+
+.jw-feedback {
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: 14px;
+}
+
+.jw-feedback.success {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+.jw-feedback.error {
+  background: var(--error-bg);
+  color: var(--error-text);
+}
+
+.jw-feedback p {
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
+.jw-next-btn {
+  min-height: 44px;
+  padding: 12px 16px;
+  background: var(--primary);
+  color: #fff;
+  cursor: pointer;
+}
+
+.jw-next-btn:active,
+.jw-chip.active:active {
+  background: var(--primary-press);
+}
+
+@media (max-width: 640px) {
+  .jw-app {
+    padding: 16px 12px 28px;
+  }
+
+  .jw-panel-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .jw-choice-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .jw-choice,
+  .jw-next-btn,
+  .jw-chip {
+    width: 100%;
+  }
+}
