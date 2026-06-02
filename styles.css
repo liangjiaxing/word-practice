@@ -83,6 +83,34 @@ button:disabled {
   min-height: 1.2em;
 }
 
+.mode-switch {
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin: 0 0 16px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.mode-btn {
+  min-height: 38px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+}
+
+.mode-btn.is-active {
+  background: var(--primary);
+  color: #fff;
+}
+
+.view[hidden] {
+  display: none;
+}
+
 .word-list {
   list-style: none;
   margin: 0;
@@ -97,6 +125,68 @@ button:disabled {
   border-radius: 14px;
   padding: 12px;
   box-shadow: 0 2px 8px rgba(13, 35, 67, 0.06);
+}
+
+.flash-shell {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 48px;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.flash-card {
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  align-items: center;
+  min-height: 360px;
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--card);
+  box-shadow: 0 8px 28px rgba(13, 35, 67, 0.09);
+  touch-action: pan-y;
+}
+
+.flash-card:focus {
+  outline: 3px solid rgba(0, 102, 204, 0.18);
+  outline-offset: 3px;
+}
+
+.flash-counter {
+  color: var(--muted);
+  font-weight: 600;
+  text-align: center;
+}
+
+.flash-word {
+  display: block;
+  overflow-wrap: anywhere;
+  font-size: clamp(2.4rem, 12vw, 5.8rem);
+  font-weight: 800;
+  line-height: 1.05;
+  text-align: center;
+}
+
+.flash-actions {
+  justify-content: center;
+}
+
+.flash-actions button {
+  min-width: 112px;
+}
+
+.flash-result {
+  text-align: center;
+}
+
+.flash-nav {
+  align-self: center;
+  width: 48px;
+  min-height: 64px;
+  padding: 0;
+  border-radius: 8px;
+  font-size: 2rem;
+  line-height: 1;
 }
 
 .word-text {
@@ -125,6 +215,24 @@ button:disabled {
 @media (max-width: 520px) {
   .input-row {
     grid-template-columns: 1fr;
+  }
+
+  .mode-switch {
+    display: grid;
+    width: 100%;
+  }
+
+  .flash-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .flash-card {
+    min-height: min(62vh, 430px);
+    padding: 18px;
+  }
+
+  .flash-nav {
+    display: none;
   }
 
   .actions button {

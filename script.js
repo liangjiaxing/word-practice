@@ -1,14 +1,31 @@
 const wordList = document.getElementById("wordList");
 const supportInfo = document.getElementById("supportInfo");
 const itemTemplate = document.getElementById("wordItemTemplate");
+const listView = document.getElementById("listView");
+const flashView = document.getElementById("flashView");
+const listModeBtn = document.getElementById("listModeBtn");
+const flashModeBtn = document.getElementById("flashModeBtn");
+const flashCard = document.getElementById("flashCard");
+const flashCounter = document.getElementById("flashCounter");
+const flashWord = document.getElementById("flashWord");
+const flashResult = document.getElementById("flashResult");
+const flashSpeakBtn = document.getElementById("flashSpeakBtn");
+const flashRecordBtn = document.getElementById("flashRecordBtn");
+const prevFlashBtn = document.getElementById("prevFlashBtn");
+const nextFlashBtn = document.getElementById("nextFlashBtn");
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
 const state = {
   words: [],
+  currentFlashIndex: 0,
+  flashResults: [],
+  isFlashRecording: false,
 };
 
 setSupportMessage();
+attachModeHandlers();
+attachFlashHandlers();
 
 // Load words from words.txt
 fetch("words.txt")
@@ -18,11 +35,73 @@ fetch("words.txt")
       .split(/[\n\s]+/)
       .map((w) => w.trim().toLowerCase())
       .filter((w) => w.length > 0);
+    state.flashResults = state.words.map(() => "");
     renderList();
+    renderFlashCard();
   })
   .catch(() => {
     supportInfo.textContent = "Failed to load words.txt";
   });
+
+function attachModeHandlers() {
+  listModeBtn.addEventListener("click", () => setMode("list"));
+  flashModeBtn.addEventListener("click", () => setMode("flash"));
+}
+
+function attachFlashHandlers() {
+  prevFlashBtn.addEventListener("click", showPreviousFlashWord);
+  nextFlashBtn.addEventListener("click", showNextFlashWord);
+  flashSpeakBtn.addEventListener("click", () => {
+    const word = state.words[state.currentFlashIndex];
+    if (word) speakWord(word);
+  });
+  flashRecordBtn.addEventListener("click", recordCurrentFlashWord);
+
+  let pointerStart = null;
+
+  flashCard.addEventListener("pointerdown", (event) => {
+    if (event.target.closest("button")) return;
+    pointerStart = { x: event.clientX, y: event.clientY };
+  });
+
+  flashCard.addEventListener("pointerup", (event) => {
+    if (!pointerStart || event.target.closest("button")) return;
+    handleFlashSwipe(pointerStart.x, pointerStart.y, event.clientX, event.clientY);
+    pointerStart = null;
+  });
+
+  flashCard.addEventListener("pointercancel", () => {
+    pointerStart = null;
+  });
+
+  flashCard.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      showPreviousFlashWord();
+    } else if (event.key === "ArrowRight") {
+      event.preventDefault();
+      showNextFlashWord();
+    }
+  });
+}
+
+function setMode(mode) {
+  const isFlashMode = mode === "flash";
+
+  listView.hidden = isFlashMode;
+  flashView.hidden = !isFlashMode;
+  listView.classList.toggle("is-active", !isFlashMode);
+  flashView.classList.toggle("is-active", isFlashMode);
+  listModeBtn.classList.toggle("is-active", !isFlashMode);
+  flashModeBtn.classList.toggle("is-active", isFlashMode);
+  listModeBtn.setAttribute("aria-selected", String(!isFlashMode));
+  flashModeBtn.setAttribute("aria-selected", String(isFlashMode));
+
+  if (isFlashMode) {
+    renderFlashCard();
+    flashCard.focus({ preventScroll: true });
+  }
+}
 
 function renderList() {
   wordList.innerHTML = "";
@@ -44,6 +123,79 @@ function renderList() {
   });
 }
 
+function renderFlashCard() {
+  const totalWords = state.words.length;
+  const hasWords = totalWords > 0;
+  state.currentFlashIndex = clampIndex(state.currentFlashIndex);
+
+  flashCounter.textContent = hasWords
+    ? `Word ${state.currentFlashIndex + 1} of ${totalWords}`
+    : "No words";
+  flashWord.textContent = hasWords ? state.words[state.currentFlashIndex] : "";
+  flashResult.textContent = hasWords ? state.flashResults[state.currentFlashIndex] : "";
+
+  const disableActions = !hasWords || state.isFlashRecording;
+  flashSpeakBtn.disabled = disableActions;
+  flashRecordBtn.disabled = disableActions;
+  prevFlashBtn.disabled = !hasWords || state.isFlashRecording || state.currentFlashIndex === 0;
+  nextFlashBtn.disabled = !hasWords || state.isFlashRecording || state.currentFlashIndex === totalWords - 1;
+}
+
+function recordCurrentFlashWord() {
+  const index = state.currentFlashIndex;
+  const word = state.words[index];
+  if (!word) return;
+
+  scorePronunciation(word, flashRecordBtn, flashResult, {
+    onStatusChange(message) {
+      state.flashResults[index] = message;
+    },
+    onRecordingChange(isRecording) {
+      state.isFlashRecording = isRecording;
+      renderFlashCard();
+    },
+  });
+}
+
+function showPreviousFlashWord() {
+  showFlashWord(state.currentFlashIndex - 1);
+}
+
+function showNextFlashWord() {
+  showFlashWord(state.currentFlashIndex + 1);
+}
+
+function showFlashWord(index) {
+  if (state.isFlashRecording || state.words.length === 0) return;
+
+  const nextIndex = clampIndex(index);
+  if (nextIndex === state.currentFlashIndex) return;
+
+  state.currentFlashIndex = nextIndex;
+  window.speechSynthesis?.cancel();
+  renderFlashCard();
+}
+
+function handleFlashSwipe(startX, startY, endX, endY) {
+  if (state.isFlashRecording) return;
+
+  const deltaX = endX - startX;
+  const deltaY = endY - startY;
+  const isHorizontalSwipe = Math.abs(deltaX) >= 48 && Math.abs(deltaX) > Math.abs(deltaY) * 1.25;
+  if (!isHorizontalSwipe) return;
+
+  if (deltaX < 0) {
+    showPreviousFlashWord();
+  } else {
+    showNextFlashWord();
+  }
+}
+
+function clampIndex(index) {
+  if (state.words.length === 0) return 0;
+  return Math.min(Math.max(index, 0), state.words.length - 1);
+}
+
 function speakWord(word) {
   if (!window.speechSynthesis) {
     alert("Speech synthesis is not supported in this browser.");
@@ -57,9 +209,14 @@ function speakWord(word) {
   window.speechSynthesis.speak(utterance);
 }
 
-function scorePronunciation(targetWord, recordBtn, resultNode) {
+function scorePronunciation(targetWord, recordBtn, resultNode, options = {}) {
+  const setResult = (message) => {
+    resultNode.textContent = message;
+    options.onStatusChange?.(message);
+  };
+
   if (!SpeechRecognition) {
-    resultNode.textContent = "Speech recognition is not supported on this browser/device.";
+    setResult("Speech recognition is not supported on this browser/device.");
     return;
   }
 
@@ -85,11 +242,12 @@ function scorePronunciation(targetWord, recordBtn, resultNode) {
   };
 
   recordBtn.disabled = true;
-  resultNode.textContent = "Preparing microphone...";
+  setResult("Preparing microphone...");
+  options.onRecordingChange?.(true);
 
   recognition.onstart = () => {
     hasStarted = true;
-    resultNode.textContent = "Listening... Speak now.";
+    setResult("Listening... Speak now.");
     // Start timeout only after recognition actually begins listening.
     forceStopTimer = setTimeout(stopRecognition, 8000);
   };
@@ -104,7 +262,7 @@ function scorePronunciation(targetWord, recordBtn, resultNode) {
     }
 
     const best = pickBestCandidate(target, candidates);
-    resultNode.textContent = `You said: "${best.original}" | Score: ${best.score}/100`;
+    setResult(`You said: "${best.original}" | Score: ${best.score}/100`);
     stopRecognition();
   };
 
@@ -117,7 +275,7 @@ function scorePronunciation(targetWord, recordBtn, resultNode) {
         : event.error === "audio-capture"
           ? "No microphone detected. Please check your microphone/device settings."
           : `Recognition failed: ${event.error}`;
-    resultNode.textContent = message;
+    setResult(message);
   };
 
   recognition.onspeechend = () => {
@@ -127,14 +285,21 @@ function scorePronunciation(targetWord, recordBtn, resultNode) {
   recognition.onend = () => {
     if (forceStopTimer) clearTimeout(forceStopTimer);
     if (!hasStarted) {
-      resultNode.textContent = "Microphone failed to start. Try Chrome/Safari over HTTPS or localhost.";
+      setResult("Microphone failed to start. Try Chrome/Safari over HTTPS or localhost.");
     } else if (!hasResult && !errorCode) {
-      resultNode.textContent = "No speech detected. Try again.";
+      setResult("No speech detected. Try again.");
     }
     recordBtn.disabled = false;
+    options.onRecordingChange?.(false);
   };
 
-  recognition.start();
+  try {
+    recognition.start();
+  } catch (error) {
+    recordBtn.disabled = false;
+    options.onRecordingChange?.(false);
+    setResult(`Microphone failed to start: ${error.message}`);
+  }
 }
 
 function pickBestCandidate(target, candidateTexts) {

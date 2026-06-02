@@ -14,7 +14,30 @@
 
       <p id="supportInfo" class="support-info" role="status" aria-live="polite">Loading words...</p>
 
-      <ul id="wordList" class="word-list" aria-label="Word list"></ul>
+      <div class="mode-switch" role="tablist" aria-label="Practice mode">
+        <button id="listModeBtn" class="mode-btn is-active" type="button" role="tab" aria-selected="true" aria-controls="listView">List</button>
+        <button id="flashModeBtn" class="mode-btn" type="button" role="tab" aria-selected="false" aria-controls="flashView">Flash Card</button>
+      </div>
+
+      <section id="listView" class="view is-active" role="tabpanel" aria-labelledby="listModeBtn">
+        <ul id="wordList" class="word-list" aria-label="Word list"></ul>
+      </section>
+
+      <section id="flashView" class="view flash-view" role="tabpanel" aria-labelledby="flashModeBtn" hidden>
+        <div class="flash-shell">
+          <button id="prevFlashBtn" class="flash-nav" type="button" aria-label="Previous word">&#8249;</button>
+          <article id="flashCard" class="flash-card" tabindex="0" aria-live="polite">
+            <span id="flashCounter" class="flash-counter"></span>
+            <span id="flashWord" class="flash-word"></span>
+            <div class="actions flash-actions">
+              <button id="flashSpeakBtn" type="button">Hear</button>
+              <button id="flashRecordBtn" type="button">Record</button>
+            </div>
+            <p id="flashResult" class="result flash-result" aria-live="polite"></p>
+          </article>
+          <button id="nextFlashBtn" class="flash-nav" type="button" aria-label="Next word">&#8250;</button>
+        </div>
+      </section>
     </main>
 
     <template id="wordItemTemplate">
