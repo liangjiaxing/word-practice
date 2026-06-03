@@ -3,19 +3,14 @@
 import { useMemo, useState } from "react";
 import {
   buildQuestion,
-  conjugationTypeLabels,
-  getAvailableConjugationTypes,
   groupHints,
-  japaneseWordDeck,
-  type ConjugationType,
   type JapaneseWordQuestion,
 } from "./game-data";
 
-const drillTypes = getAvailableConjugationTypes();
 type AnswerMode = "choice" | "input";
 
-function createQuestion(type: ConjugationType) {
-  return buildQuestion(japaneseWordDeck, type);
+function createQuestion() {
+  return buildQuestion();
 }
 
 function normalizeAnswer(value: string) {
@@ -23,9 +18,8 @@ function normalizeAnswer(value: string) {
 }
 
 export default function JapaneseWordGame() {
-  const [activeType, setActiveType] = useState<ConjugationType>(drillTypes[0]);
   const [answerMode, setAnswerMode] = useState<AnswerMode>("choice");
-  const [question, setQuestion] = useState<JapaneseWordQuestion>(() => createQuestion(drillTypes[0]));
+  const [question, setQuestion] = useState<JapaneseWordQuestion>(() => createQuestion());
   const [selected, setSelected] = useState<string | null>(null);
   const [typedAnswer, setTypedAnswer] = useState("");
   const [correctCount, setCorrectCount] = useState(0);
@@ -37,7 +31,7 @@ export default function JapaneseWordGame() {
   const summary = useMemo(() => {
     if (!selected) return "";
     return isCorrect
-      ? `回答正确！${question.verb.dictionary} 的 ${conjugationTypeLabels[question.type]} 就是 ${question.answer}。`
+      ? `回答正确！${question.verb.dictionary} 的 ${question.answer} 就是给出的变形。`
       : `回答错误。正确答案是 ${question.answer}。`;
   }, [isCorrect, question, selected]);
 
@@ -46,16 +40,8 @@ export default function JapaneseWordGame() {
     setTypedAnswer("");
   }
 
-  function chooseType(type: ConjugationType) {
-    setActiveType(type);
-    setQuestion(createQuestion(type));
-    resetAnswerState();
-    setCorrectCount(0);
-    setAnsweredCount(0);
-  }
-
-  function chooseMode(mode: AnswerMode) {
-    setAnswerMode(mode);
+  function nextQuestion() {
+    setQuestion(createQuestion());
     resetAnswerState();
   }
 
@@ -78,49 +64,30 @@ export default function JapaneseWordGame() {
     finishAnswer(normalized);
   }
 
-  function nextQuestion() {
-    setQuestion(createQuestion(activeType));
-    resetAnswerState();
-  }
-
   return (
     <main className="jw-app">
       <h1>日语动词变形辨识游戏</h1>
       <p className="jw-subtitle">
-        识别给出的动词变形，练习并区分被动形、可能形、使役形、使役被动形，覆盖一类、二类、三类动词。
+        判断给出的动词变形属于可能形、被动形、使役形还是使役被动形，覆盖一类、二类、三类动词。
       </p>
 
-      <section className="jw-panel" aria-label="drill type selector">
+      <section className="jw-panel" aria-label="answer mode selector">
         <div className="jw-panel-header">
-          <strong>选择练习类型</strong>
+          <strong>游戏模式</strong>
           <span className="jw-progress">已答对 {correctCount} / {answeredCount}</span>
         </div>
-        <div className="jw-chip-row">
-          {drillTypes.map((type) => (
-            <button
-              key={type}
-              type="button"
-              className={type === activeType ? "jw-chip active" : "jw-chip"}
-              onClick={() => chooseType(type)}
-            >
-              {conjugationTypeLabels[type]}
-            </button>
-          ))}
-        </div>
-        <p className="jw-current-type">当前练习：{conjugationTypeLabels[activeType]}</p>
-
-        <div className="jw-mode-row" role="group" aria-label="answer mode selector">
+        <div className="jw-mode-row" role="group">
           <button
             type="button"
             className={answerMode === "choice" ? "jw-chip active" : "jw-chip"}
-            onClick={() => chooseMode("choice")}
+            onClick={() => setAnswerMode("choice")}
           >
             选择模式
           </button>
           <button
             type="button"
             className={answerMode === "input" ? "jw-chip active" : "jw-chip"}
-            onClick={() => chooseMode("input")}
+            onClick={() => setAnswerMode("input")}
           >
             输入模式
           </button>
@@ -164,7 +131,7 @@ export default function JapaneseWordGame() {
             <input
               type="text"
               className="jw-input"
-              placeholder="输入你选择的变形类型"
+              placeholder="输入动词变形类型"
               value={typedAnswer}
               onChange={(event) => setTypedAnswer(event.target.value)}
               disabled={isAnswered}

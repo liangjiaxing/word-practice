@@ -7,7 +7,7 @@ describe("JapaneseWordGame", () => {
     render(<JapaneseWordGame />);
 
     expect(screen.getByRole("heading", { level: 1, name: "日语动词变形辨识游戏" })).toBeDefined();
-    expect(screen.getByText(/识别给出的动词变形/)).toBeDefined();
+    expect(screen.getByText(/判断给出的动词变形/)).toBeDefined();
 
     const optionButtons = screen.getAllByRole("button").filter((button) =>
       button.getAttribute("data-choice") === "true"
@@ -24,15 +24,6 @@ describe("JapaneseWordGame", () => {
     expect(screen.getByRole("button", { name: "下一题" })).toBeDefined();
   });
 
-  it("switches the drill type when a filter chip is selected", () => {
-    render(<JapaneseWordGame />);
-
-    fireEvent.click(screen.getByRole("button", { name: "被动形" }));
-
-    expect(screen.getByText(/当前练习：被动形/)).toBeDefined();
-    expect(screen.getByText(/的被动形是哪个？/)).toBeDefined();
-  });
-
   it("supports input mode and marks a typed correct answer", () => {
     render(<JapaneseWordGame />);
 
@@ -44,7 +35,7 @@ describe("JapaneseWordGame", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "输入模式" }));
 
-    const input = screen.getByPlaceholderText("输入你选择的变形类型");
+    const input = screen.getByPlaceholderText("输入动词变形类型");
     fireEvent.change(input, { target: { value: correct!.textContent ?? "" } });
     fireEvent.click(screen.getByRole("button", { name: "提交答案" }));
 
@@ -56,7 +47,7 @@ describe("JapaneseWordGame", () => {
     render(<JapaneseWordGame />);
 
     fireEvent.click(screen.getByRole("button", { name: "输入模式" }));
-    fireEvent.change(screen.getByPlaceholderText("输入你选择的变形类型"), {
+    fireEvent.change(screen.getByPlaceholderText("输入动词变形类型"), {
       target: { value: "完全错误" },
     });
     fireEvent.click(screen.getByRole("button", { name: "提交答案" }));

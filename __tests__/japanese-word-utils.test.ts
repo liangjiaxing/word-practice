@@ -20,25 +20,24 @@ describe("japanese-word game data helpers", () => {
   });
 
   it("builds a multiple-choice question with four unique choices including the correct answer", () => {
-    const question = buildQuestion(japaneseWordDeck, "potential");
+    const question = buildQuestion();
 
-    expect(question.type).toBe("potential");
-    expect(question.answer).toBe(question.verb.forms.potential);
+    expect(question.type).toBeUndefined();
+    expect(question.verb).toBeDefined();
     expect(question.choices).toHaveLength(4);
     expect(new Set(question.choices).size).toBe(4);
     expect(question.choices).toContain(question.answer);
-    expect(question.prompt).toContain("可能形");
-    expect(question.prompt).toContain(question.verb.dictionary);
+    expect(question.prompt).toContain("何形ですか？");
   });
 
-  it("reuses next available distractors when same-verb forms are exhausted", () => {
+  it("generates quizzes that remain answerable when the deck is deterministic", () => {
     const random = vi.fn<() => number>().mockReturnValue(0);
 
-    const question = buildQuestion(japaneseWordDeck, "potential", random);
-    const distractors = question.choices.filter((choice) => choice !== question.answer);
+    const question = buildQuestion(random);
 
     expect(question).toBeDefined();
     expect(question.choices).toHaveLength(4);
     expect(new Set(question.choices).size).toBe(4);
+    expect(question.choices).toContain(question.answer);
   });
 });

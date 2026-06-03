@@ -1,8 +1,4 @@
-export type ConjugationType =
-  | "passive"
-  | "potential"
-  | "causative"
-  | "causativepassive";
+export type ConjugationType = "passive" | "potential" | "causative" | "causativepassive";
 
 export interface JapaneseVerbEntry {
   dictionary: string;
@@ -13,7 +9,6 @@ export interface JapaneseVerbEntry {
 
 export interface JapaneseWordQuestion {
   verb: JapaneseVerbEntry;
-  type: ConjugationType;
   prompt: string;
   answer: string;
   choices: string[];
@@ -167,75 +162,29 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
   },
 ];
 
+const availableTypes = ["passive", "potential", "causative", "causativepassive"] as const;
+const availableLabels = availableTypes.map((type) => conjugationTypeLabels[type]);
+
 export function getAvailableConjugationTypes(): ConjugationType[] {
-  return ["passive", "potential", "causative", "causativepassive"];
+  return [...availableTypes];
 }
 
 export function buildQuestion(
-  deck: JapaneseVerbEntry[],
-  type: ConjugationType,
   random: () => number = Math.random
 ): JapaneseWordQuestion {
-  const verb = deck[Math.floor(random() * deck.length)] ?? deck[0];
-  const answer = verb.forms[type];
+  const verb = japaneseWordDeck[Math.floor(random() * japaneseWordDeck.length)] ?? japaneseWordDeck[0];
+  const type = availableTypes[Math.floor(random() * availableTypes.length)] ?? availableTypes[0];
+  const form = verb.forms[type];
+  const answer = conjugationTypeLabels[type];
 
-  const sameVerbDistractors = getSameVerbDistractors(verb, type);
-  const relatedVerbDistractors = deck
-    .filter((entry) => entry.dictionary !== verb.dictionary)
-    .flatMap((entry) => [entry.forms[type], ...getSameVerbDistractors(entry, type)])
-    .filter((form, index, forms) => form !== answer && forms.indexOf(form) === index);
-
-  const distractors = [
-    ...pickUnique(sameVerbDistractors, 2, random),
-    ...pickUnique(relatedVerbDistractors, 2, random),
-  ]
-    .filter((form, index, forms) => form !== answer && forms.indexOf(form) === index)
-    .slice(0, 3);
-
-  const fallbackChoices = [answer, verb.dictionary, ...sameVerbDistractors, ...relatedVerbDistractors]
-    .filter((form) => !!form)
-    .filter((form, index, forms) => forms.indexOf(form) === index)
-    .slice(0, 4);
-
-  const choices = shuffle(
-    (distractors.length === 3 ? [answer, ...distractors] : fallbackChoices).slice(0, 4),
-    random
-  );
+  const choices = shuffle([...availableLabels], random).slice(0, 4);
 
   return {
     verb,
-    type,
+    prompt: `この形「${form}」は何形ですか？`,
     answer,
     choices,
-    prompt: `${verb.dictionary}（${verb.meaning}）的${conjugationTypeLabels[type]}是哪个？`,
   };
-}
-
-function getSameVerbDistractors(
-  verb: JapaneseVerbEntry,
-  targetType: ConjugationType
-): string[] {
-  return getAvailableConjugationTypes()
-    .filter((item) => item !== targetType)
-    .map((item) => verb.forms[item])
-    .filter((form, index, forms) => form && forms.indexOf(form) === index);
-}
-
-function pickUnique<T>(items: T[], count: number, random: () => number): T[] {
-  const pool = [...items];
-  const picked: T[] = [];
-
-  while (pool.length > 0 && picked.length < count) {
-    const raw = random();
-    const normalized = Number.isFinite(raw) ? raw : 0;
-    const index = Math.max(0, Math.min(pool.length - 1, Math.floor(normalized * pool.length)));
-    const [candidate] = pool.splice(index, 1);
-    if (candidate !== undefined) {
-      picked.push(candidate);
-    }
-  }
-
-  return picked;
 }
 
 function shuffle<T>(items: T[], random: () => number): T[] {
