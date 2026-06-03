@@ -85,9 +85,9 @@ export default function JapaneseWordGame() {
 
   return (
     <main className="jw-app">
-      <h1>日语单词变形记忆游戏</h1>
+      <h1>日语动词变形辨识游戏</h1>
       <p className="jw-subtitle">
-        从基础形选出指定变形，专门练习可能形、命令形、意向形等常见词形。
+        识别给出的动词变形，练习并区分被动形、可能形、使役形、使役被动形，覆盖一类、二类、三类动词。
       </p>
 
       <section className="jw-panel" aria-label="drill type selector">
@@ -164,7 +164,7 @@ export default function JapaneseWordGame() {
             <input
               type="text"
               className="jw-input"
-              placeholder="输入你记住的变形"
+              placeholder="输入你选择的变形类型"
               value={typedAnswer}
               onChange={(event) => setTypedAnswer(event.target.value)}
               disabled={isAnswered}

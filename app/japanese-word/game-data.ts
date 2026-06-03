@@ -1,10 +1,8 @@
 export type ConjugationType =
-  | "nai"
-  | "te"
-  | "ta"
+  | "passive"
   | "potential"
-  | "imperative"
-  | "volitional";
+  | "causative"
+  | "causativepassive";
 
 export interface JapaneseVerbEntry {
   dictionary: string;
@@ -22,12 +20,10 @@ export interface JapaneseWordQuestion {
 }
 
 export const conjugationTypeLabels: Record<ConjugationType, string> = {
-  nai: "ない形",
-  te: "て形",
-  ta: "た形",
+  passive: "被动形",
   potential: "可能形",
-  imperative: "命令形",
-  volitional: "意向形",
+  causative: "使役形",
+  causativepassive: "使役被动形",
 };
 
 export const groupHints: Record<JapaneseVerbEntry["group"], string> = {
@@ -42,12 +38,10 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
     meaning: "吃",
     group: "ichidan",
     forms: {
-      nai: "食べない",
-      te: "食べて",
-      ta: "食べた",
+      passive: "食べられる",
       potential: "食べられる",
-      imperative: "食べろ",
-      volitional: "食べよう",
+      causative: "食べさせる",
+      causativepassive: "食べさせられる",
     },
   },
   {
@@ -55,12 +49,10 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
     meaning: "看",
     group: "ichidan",
     forms: {
-      nai: "見ない",
-      te: "見て",
-      ta: "見た",
+      passive: "見られる",
       potential: "見られる",
-      imperative: "見ろ",
-      volitional: "見よう",
+      causative: "見させる",
+      causativepassive: "見させられる",
     },
   },
   {
@@ -68,12 +60,10 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
     meaning: "起床",
     group: "ichidan",
     forms: {
-      nai: "起きない",
-      te: "起きて",
-      ta: "起きた",
+      passive: "起きられる",
       potential: "起きられる",
-      imperative: "起きろ",
-      volitional: "起きよう",
+      causative: "起きさせる",
+      causativepassive: "起きさせられる",
     },
   },
   {
@@ -81,12 +71,10 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
     meaning: "写",
     group: "godan",
     forms: {
-      nai: "書かない",
-      te: "書いて",
-      ta: "書いた",
+      passive: "書かれる",
       potential: "書ける",
-      imperative: "書け",
-      volitional: "書こう",
+      causative: "書かせる",
+      causativepassive: "書かせられる",
     },
   },
   {
@@ -94,12 +82,10 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
     meaning: "说",
     group: "godan",
     forms: {
-      nai: "話さない",
-      te: "話して",
-      ta: "話した",
+      passive: "話される",
       potential: "話せる",
-      imperative: "話せ",
-      volitional: "話そう",
+      causative: "話させる",
+      causativepassive: "話させられる",
     },
   },
   {
@@ -107,12 +93,10 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
     meaning: "读",
     group: "godan",
     forms: {
-      nai: "読まない",
-      te: "読んで",
-      ta: "読んだ",
+      passive: "読まれる",
       potential: "読める",
-      imperative: "読め",
-      volitional: "読もう",
+      causative: "読ませる",
+      causativepassive: "読ませられる",
     },
   },
   {
@@ -120,12 +104,10 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
     meaning: "游泳",
     group: "godan",
     forms: {
-      nai: "泳がない",
-      te: "泳いで",
-      ta: "泳いだ",
+      passive: "泳がれる",
       potential: "泳げる",
-      imperative: "泳げ",
-      volitional: "泳ごう",
+      causative: "泳がせる",
+      causativepassive: "泳がせられる",
     },
   },
   {
@@ -133,12 +115,10 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
     meaning: "等",
     group: "godan",
     forms: {
-      nai: "待たない",
-      te: "待って",
-      ta: "待った",
+      passive: "待たれる",
       potential: "待てる",
-      imperative: "待て",
-      volitional: "待とう",
+      causative: "待たせる",
+      causativepassive: "待たせられる",
     },
   },
   {
@@ -146,12 +126,10 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
     meaning: "买",
     group: "godan",
     forms: {
-      nai: "買わない",
-      te: "買って",
-      ta: "買った",
+      passive: "買われる",
       potential: "買える",
-      imperative: "買え",
-      volitional: "買おう",
+      causative: "買わせる",
+      causativepassive: "買わせられる",
     },
   },
   {
@@ -159,12 +137,10 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
     meaning: "喝",
     group: "godan",
     forms: {
-      nai: "飲まない",
-      te: "飲んで",
-      ta: "飲んだ",
+      passive: "飲まれる",
       potential: "飲める",
-      imperative: "飲め",
-      volitional: "飲もう",
+      causative: "飲ませる",
+      causativepassive: "飲ませられる",
     },
   },
   {
@@ -172,12 +148,10 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
     meaning: "来",
     group: "irregular",
     forms: {
-      nai: "来ない",
-      te: "来て",
-      ta: "来た",
+      passive: "来られる",
       potential: "来られる",
-      imperative: "来い",
-      volitional: "来よう",
+      causative: "来させる",
+      causativepassive: "来させられる",
     },
   },
   {
@@ -185,18 +159,16 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
     meaning: "做",
     group: "irregular",
     forms: {
-      nai: "しない",
-      te: "して",
-      ta: "した",
+      passive: "される",
       potential: "できる",
-      imperative: "しろ",
-      volitional: "しよう",
+      causative: "させる",
+      causativepassive: "させられる",
     },
   },
 ];
 
 export function getAvailableConjugationTypes(): ConjugationType[] {
-  return ["nai", "te", "ta", "potential", "imperative", "volitional"];
+  return ["passive", "potential", "causative", "causativepassive"];
 }
 
 export function buildQuestion(
@@ -214,14 +186,15 @@ export function buildQuestion(
     .filter((form, index, forms) => form !== answer && forms.indexOf(form) === index);
 
   const distractors = [
-    ...pickUnique(sameVerbDistractors, 3, random),
-    ...pickUnique(relatedVerbDistractors, 3, random),
+    ...pickUnique(sameVerbDistractors, 2, random),
+    ...pickUnique(relatedVerbDistractors, 2, random),
   ]
     .filter((form, index, forms) => form !== answer && forms.indexOf(form) === index)
     .slice(0, 3);
 
   const fallbackChoices = [answer, verb.dictionary, ...sameVerbDistractors, ...relatedVerbDistractors]
-    .filter((form, index, forms) => form && forms.indexOf(form) === index)
+    .filter((form) => !!form)
+    .filter((form, index, forms) => forms.indexOf(form) === index)
     .slice(0, 4);
 
   const choices = shuffle(
@@ -243,8 +216,8 @@ function getSameVerbDistractors(
   targetType: ConjugationType
 ): string[] {
   return getAvailableConjugationTypes()
-    .filter((type) => type !== targetType)
-    .map((type) => verb.forms[type])
+    .filter((item) => item !== targetType)
+    .map((item) => verb.forms[item])
     .filter((form, index, forms) => form && forms.indexOf(form) === index);
 }
 

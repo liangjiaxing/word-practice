@@ -3,8 +3,9 @@ import "./page.css";
 import JapaneseWordGame from "./JapaneseWordGame";
 
 export const metadata: Metadata = {
-  title: "日语单词变形记忆游戏",
-  description: "练习日语动词各种词形，包括可能形、命令形、意向形、て形、た形和ない形。",
+  title: "日语动词变形辨识游戏",
+  description:
+    "识别给出的动词变形，练习并区分可能形、被动形、使役形、使役被动形，覆盖一类、二类、三类动词。",
 };
 
 export default function JapaneseWordPage() {
