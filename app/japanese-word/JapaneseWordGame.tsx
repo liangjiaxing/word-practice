@@ -3,25 +3,28 @@
 import { useMemo, useState } from "react";
 import {
   buildQuestion,
+  conjugationTypeLabels,
+  getAvailableConjugationTypes,
   groupHints,
   type JapaneseWordQuestion,
 } from "./game-data";
 
-type AnswerMode = "choice" | "input";
+const drillTypes = getAvailableConjugationTypes();
 
-function createQuestion() {
-  return buildQuestion();
-}
-
-function normalizeAnswer(value: string) {
-  return value.replace(/\s+/g, "").trim();
+function createQuestion(type: string) {
+  let question: JapaneseWordQuestion;
+  do {
+    question = buildQuestion();
+  } while (question.answer !== conjugationTypeLabels[type as keyof typeof conjugationTypeLabels]);
+  return question;
 }
 
 export default function JapaneseWordGame() {
-  const [answerMode, setAnswerMode] = useState<AnswerMode>("choice");
-  const [question, setQuestion] = useState<JapaneseWordQuestion>(() => createQuestion());
+  const [activeType, setActiveType] = useState<string>(drillTypes[0]);
+  const [question, setQuestion] = useState<JapaneseWordQuestion>(() =>
+    createQuestion(drillTypes[0]),
+  );
   const [selected, setSelected] = useState<string | null>(null);
-  const [typedAnswer, setTypedAnswer] = useState("");
   const [correctCount, setCorrectCount] = useState(0);
   const [answeredCount, setAnsweredCount] = useState(0);
 
@@ -37,12 +40,14 @@ export default function JapaneseWordGame() {
 
   function resetAnswerState() {
     setSelected(null);
-    setTypedAnswer("");
   }
 
-  function nextQuestion() {
-    setQuestion(createQuestion());
+  function chooseType(type: string) {
+    setActiveType(type);
+    setQuestion(createQuestion(type));
     resetAnswerState();
+    setCorrectCount(0);
+    setAnsweredCount(0);
   }
 
   function finishAnswer(answer: string) {
@@ -54,14 +59,9 @@ export default function JapaneseWordGame() {
     }
   }
 
-  function handleChoice(choice: string) {
-    finishAnswer(choice);
-  }
-
-  function submitTypedAnswer() {
-    const normalized = normalizeAnswer(typedAnswer);
-    if (!normalized || isAnswered) return;
-    finishAnswer(normalized);
+  function nextQuestion() {
+    setQuestion(createQuestion(activeType));
+    resetAnswerState();
   }
 
   return (
@@ -71,26 +71,24 @@ export default function JapaneseWordGame() {
         判断给出的动词变形属于可能形、被动形、使役形还是使役被动形，覆盖一类、二类、三类动词。
       </p>
 
-      <section className="jw-panel" aria-label="answer mode selector">
+      <section className="jw-panel" aria-label="drill type selector">
         <div className="jw-panel-header">
-          <strong>游戏模式</strong>
-          <span className="jw-progress">已答对 {correctCount} / {answeredCount}</span>
+          <strong>选择练习类型</strong>
+          <span className="jw-progress">
+            已答对 {correctCount} / {answeredCount}
+          </span>
         </div>
-        <div className="jw-mode-row" role="group">
-          <button
-            type="button"
-            className={answerMode === "choice" ? "jw-chip active" : "jw-chip"}
-            onClick={() => setAnswerMode("choice")}
-          >
-            选择模式
-          </button>
-          <button
-            type="button"
-            className={answerMode === "input" ? "jw-chip active" : "jw-chip"}
-            onClick={() => setAnswerMode("input")}
-          >
-            输入模式
-          </button>
+        <div className="jw-chip-row">
+          {drillTypes.map((type) => (
+            <button
+              key={type}
+              type="button"
+              className={type === activeType ? "jw-chip active" : "jw-chip"}
+              onClick={() => chooseType(type)}
+            >
+              {conjugationTypeLabels[type]}
+            </button>
+          ))}
         </div>
       </section>
 
@@ -99,59 +97,32 @@ export default function JapaneseWordGame() {
         <div className="jw-word">{question.verb.dictionary}</div>
         <div className="jw-meaning">意思：{question.verb.meaning}</div>
 
-        {answerMode === "choice" ? (
-          <div className="jw-choice-grid">
-            {question.choices.map((choice) => {
-              const isChoiceCorrect = choice === question.answer;
-              const stateClass = !isAnswered
-                ? ""
-                : isChoiceCorrect
-                  ? " correct"
-                  : choice === selected
-                    ? " wrong"
-                    : "";
+        <div className="jw-choice-grid">
+          {question.choices.map((choice) => {
+            const isChoiceCorrect = choice === question.answer;
+            const stateClass = !isAnswered
+              ? ""
+              : isChoiceCorrect
+                ? " correct"
+                : choice === selected
+                  ? " wrong"
+                  : "";
 
-              return (
-                <button
-                  key={choice}
-                  type="button"
-                  data-choice="true"
-                  data-correct={isChoiceCorrect ? "true" : "false"}
-                  className={`jw-choice${stateClass}`}
-                  onClick={() => handleChoice(choice)}
-                  disabled={isAnswered}
-                >
-                  {choice}
-                </button>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="jw-input-area">
-            <input
-              type="text"
-              className="jw-input"
-              placeholder="输入动词变形类型"
-              value={typedAnswer}
-              onChange={(event) => setTypedAnswer(event.target.value)}
-              disabled={isAnswered}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  event.preventDefault();
-                  submitTypedAnswer();
-                }
-              }}
-            />
-            <button
-              type="button"
-              className="jw-submit-btn"
-              onClick={submitTypedAnswer}
-              disabled={isAnswered || !normalizeAnswer(typedAnswer)}
-            >
-              提交答案
-            </button>
-          </div>
-        )}
+            return (
+              <button
+                key={choice}
+                type="button"
+                data-choice="true"
+                data-correct={isChoiceCorrect ? "true" : "false"}
+                className={`jw-choice${stateClass}`}
+                onClick={() => finishAnswer(choice)}
+                disabled={isAnswered}
+              >
+                {choice}
+              </button>
+            );
+          })}
+        </div>
 
         <div className="jw-hint">
           <strong>记忆提示：</strong>

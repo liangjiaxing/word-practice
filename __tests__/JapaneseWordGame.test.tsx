@@ -6,15 +6,19 @@ describe("JapaneseWordGame", () => {
   it("renders the first quiz and updates progress after a correct answer", () => {
     render(<JapaneseWordGame />);
 
-    expect(screen.getByRole("heading", { level: 1, name: "日语动词变形辨识游戏" })).toBeDefined();
+    expect(
+      screen.getByRole("heading", { level: 1, name: "日语动词变形辨识游戏" }),
+    ).toBeDefined();
     expect(screen.getByText(/判断给出的动词变形/)).toBeDefined();
 
     const optionButtons = screen.getAllByRole("button").filter((button) =>
-      button.getAttribute("data-choice") === "true"
+      button.getAttribute("data-choice") === "true",
     );
     expect(optionButtons).toHaveLength(4);
 
-    const correct = optionButtons.find((button) => button.getAttribute("data-correct") === "true");
+    const correct = optionButtons.find(
+      (button) => button.getAttribute("data-correct") === "true",
+    );
     expect(correct).toBeDefined();
 
     fireEvent.click(correct!);
@@ -24,35 +28,15 @@ describe("JapaneseWordGame", () => {
     expect(screen.getByRole("button", { name: "下一题" })).toBeDefined();
   });
 
-  it("supports input mode and marks a typed correct answer", () => {
+  it("switches the drill type when a filter chip is selected", () => {
     render(<JapaneseWordGame />);
 
-    const correct = screen
-      .getAllByRole("button")
-      .find((button) => button.getAttribute("data-choice") === "true" && button.getAttribute("data-correct") === "true");
+    const chip = screen.getAllByRole("button", { name: "使役形" }).find((btn) =>
+      btn.classList.contains("jw-chip"),
+    );
+    expect(chip).toBeDefined();
+    fireEvent.click(chip!);
 
-    expect(correct).toBeDefined();
-
-    fireEvent.click(screen.getByRole("button", { name: "输入模式" }));
-
-    const input = screen.getByPlaceholderText("输入动词变形类型");
-    fireEvent.change(input, { target: { value: correct!.textContent ?? "" } });
-    fireEvent.click(screen.getByRole("button", { name: "提交答案" }));
-
-    expect(screen.getByText(/回答正确/)).toBeDefined();
-    expect(screen.getByText("已答对 1 / 1")).toBeDefined();
-  });
-
-  it("shows the right answer after a wrong typed answer", () => {
-    render(<JapaneseWordGame />);
-
-    fireEvent.click(screen.getByRole("button", { name: "输入模式" }));
-    fireEvent.change(screen.getByPlaceholderText("输入动词变形类型"), {
-      target: { value: "完全错误" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "提交答案" }));
-
-    expect(screen.getByText(/回答错误。正确答案是/)).toBeDefined();
-    expect(screen.getByText("已答对 0 / 1")).toBeDefined();
+    expect(screen.getByText(/何形ですか？/)).toBeDefined();
   });
 });
