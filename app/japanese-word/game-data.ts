@@ -6,11 +6,12 @@ export interface JapaneseVerbEntry {
   romaji?: string;
   group: "godan" | "ichidan" | "irregular";
   forms: Record<ConjugationType, string>;
-  exampleSentence?: string;
+  exampleSentences?: Partial<Record<ConjugationType, string>>;
 }
 
 export interface JapaneseWordQuestion {
   verb: JapaneseVerbEntry;
+  type: ConjugationType;
   prompt: string;
   answer: string;
   choices: string[];
@@ -41,7 +42,12 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
       causative: "食べさせる",
       causativepassive: "食べさせられる",
     },
-    exampleSentence: "母は子供に野菜を食べさせる。",
+    exampleSentences: {
+      passive: "弟は兄に野菜を食べられる。",
+      potential: "私は一人でピザを食べられる。",
+      causative: "母は子供に野菜を食べさせる。",
+      causativepassive: "弟は母に野菜を食べさせられる。",
+    },
   },
   {
     dictionary: "見る",
@@ -54,7 +60,12 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
       causative: "見させる",
       causativepassive: "見させられる",
     },
-    exampleSentence: "母は子供に映画を見させる。",
+    exampleSentences: {
+      passive: "彼は先輩にその映画を見られる。",
+      potential: "私はこのレンズで微观図を見られる。",
+      causative: "母は子供に絵本を見させる。",
+      causativepassive: "彼は母に毎晩ニュースを見させられる。",
+    },
   },
   {
     dictionary: "起きる",
@@ -67,7 +78,12 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
       causative: "起きさせる",
       causativepassive: "起きさせられる",
     },
-    exampleSentence: "母は子供を朝７時に起きさせる。",
+    exampleSentences: {
+      passive: "子供は父に朝６時に起きられる。",
+      potential: "ここでは地下鉄の音でよく起きられる。",
+      causative: "母は子供を朝７時に起きさせる。",
+      causativepassive: "子供は母に夏休みでも朝６時に起きさせられる。",
+    },
   },
   {
     dictionary: "書く",
@@ -80,7 +96,12 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
       causative: "書かせる",
       causativepassive: "書かせられる",
     },
-    exampleSentence: "先生は生徒にレポートを書かせる。",
+    exampleSentences: {
+      passive: "生徒は先生にこの単語を漢字で書かれる。",
+      potential: "私は手紙を簡単に書ける。",
+      causative: "先生は学生にレポートを書かせる。",
+      causativepassive: "学生は担当教授に毎週課題を書かせられる。",
+    },
   },
   {
     dictionary: "話す",
@@ -93,7 +114,12 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
       causative: "話させる",
       causativepassive: "話させられる",
     },
-    exampleSentence: "先生は学生に日本語で話させる。",
+    exampleSentences: {
+      passive: "新入生は先輩に日本語で挨拶を話される。",
+      potential: "僕は子供とすぐに仲良くなって話せる。",
+      causative: "先生は学生に日本語で意見を話させる。",
+      causativepassive: "学生は先生に授業中にグループの話を話させられる。",
+    },
   },
   {
     dictionary: "読む",
@@ -106,7 +132,12 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
       causative: "読ませる",
       causativepassive: "読ませられる",
     },
-    exampleSentence: "父は息子に本を毎晩読ませる。",
+    exampleSentences: {
+      passive: "子どもたちは先生に絵本を音読で読まれる。",
+      potential: "このアプリで外国語の記事がすぐ読める。",
+      causative: "母は子供に毎晩本を読ませる。",
+      causativepassive: "子供は母に学校の本を読む宿題を毎日読ませられる。",
+    },
   },
   {
     dictionary: "泳ぐ",
@@ -119,7 +150,12 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
       causative: "泳がせる",
       causativepassive: "泳がせられる",
     },
-    exampleSentence: "コーチは選手たちでプールを泳がせる。",
+    exampleSentences: {
+      passive: "選手はコーチに今日の課題を泳がれる。",
+      potential: "ここは水がきれいだから気持ちよく泳げる。",
+      causative: "コーチは選手たちでプールを泳がせる。",
+      causativepassive: "初心者はコーチに毎回同じ距離を泳がせられる。",
+    },
   },
   {
     dictionary: "待つ",
@@ -132,7 +168,12 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
       causative: "待たせる",
       causativepassive: "待たせられる",
     },
-    exampleSentence: "駅で客を１０分待たせる。",
+    exampleSentences: {
+      passive: "利用客は店員に順番が来るまで待たれる。",
+      potential: "家で荷物が届くまで少し待てる。",
+      causative: "駅で客を１０分待たせる。",
+      causativepassive: "バス停で乗客は遅れたバスを１０分待たせられる。",
+    },
   },
   {
     dictionary: "買う",
@@ -145,7 +186,12 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
       causative: "買わせる",
       causativepassive: "買わせられる",
     },
-    exampleSentence: "母は子供を一緒に果物を買わせる。",
+    exampleSentences: {
+      passive: "この絵は有名なコレクターに高値で買われる。",
+      potential: "ネットで老舗の限定商品がすぐ買える。",
+      causative: "母は子供を一緒に果物を買わせる。",
+      causativepassive: "子供は母に毎週スナックを買わさせられる。",
+    },
   },
   {
     dictionary: "飲む",
@@ -158,7 +204,12 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
       causative: "飲ませる",
       causativepassive: "飲ませられる",
     },
-    exampleSentence: "医者は患者に薬を飲ませる。",
+    exampleSentences: {
+      passive: "お茶は来客にまず会釈をしてから飲まれる。",
+      potential: "この店は menu の分量も調整して飲める。",
+      causative: "医者は患者に薬を飲ませる。",
+      causativepassive: "患者は医師に実験中の新薬を飲まさせられる。",
+    },
   },
   {
     dictionary: "来る",
@@ -171,7 +222,12 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
       causative: "来させる",
       causativepassive: "来させられる",
     },
-    exampleSentence: "駅へ友達を来させる。",
+    exampleSentences: {
+      passive: "彼は支配人に面接のために営業所へ来られる。",
+      potential: "地下鉄が使えるから学会会場へ簡単に来られる。",
+      causative: "駅へ友達を来させる。",
+      causativepassive: "教授は毎朝ゼミ生を研究室へ来させられる。",
+    },
   },
   {
     dictionary: "する",
@@ -184,7 +240,12 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
       causative: "させる",
       causativepassive: "させられる",
     },
-    exampleSentence: "先生は学生に宿題をさせる。",
+    exampleSentences: {
+      passive: "面接は担当部長に最後に自己紹介をされる。",
+      potential: "一人でいつでも銀行振込ができる。",
+      causative: "先生は学生に宿題をさせる。",
+      causativepassive: "学生は科目によって毎週レポートを書かさせられる。",
+    },
   },
 ];
 
@@ -207,6 +268,7 @@ export function buildQuestion(
 
   return {
     verb,
+    type,
     prompt: `この形「${form}」は何形ですか？`,
     answer,
     choices,

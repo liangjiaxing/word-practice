@@ -22,7 +22,8 @@ describe("japanese-word game data helpers", () => {
   it("builds a multiple-choice question with four unique choices including the correct answer", () => {
     const question = buildQuestion();
 
-    expect(question.type).toBeUndefined();
+    expect(question.type).toBeDefined();
+    expect(["passive", "potential", "causative", "causativepassive"]).toContain(question.type);
     expect(question.verb).toBeDefined();
     expect(question.choices).toHaveLength(4);
     expect(new Set(question.choices).size).toBe(4);

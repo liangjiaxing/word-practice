@@ -28,7 +28,7 @@ export default function JapaneseWordGame() {
     const base = isCorrect
       ? `回答正确！${question.verb.dictionary} 的 ${question.answer} 就是给出的变形。`
       : `回答错误。正确答案是 ${question.answer}。`;
-    const example = question.verb.exampleSentence?.trim();
+    const example = question.verb.exampleSentences?.[question.type]?.trim();
     return example ? `${base}<br/><br/>例：${example}` : base;
   }, [isCorrect, question, selected]);
 
