@@ -25,9 +25,11 @@ export default function JapaneseWordGame() {
 
   const summary = useMemo(() => {
     if (!selected) return "";
-    return isCorrect
+    const base = isCorrect
       ? `回答正确！${question.verb.dictionary} 的 ${question.answer} 就是给出的变形。`
       : `回答错误。正确答案是 ${question.answer}。`;
+    const example = question.verb.exampleSentence?.trim();
+    return example ? `${base}<br/><br/>例：${example}` : base;
   }, [isCorrect, question, selected]);
 
   function resetAnswerState() {
@@ -94,7 +96,7 @@ export default function JapaneseWordGame() {
 
         {isAnswered ? (
           <div className={isCorrect ? "jw-feedback success" : "jw-feedback error"}>
-            <p>{summary}</p>
+            <p dangerouslySetInnerHTML={{ __html: summary }} />
             <button type="button" className="jw-next-btn" onClick={nextQuestion}>
               下一题
             </button>

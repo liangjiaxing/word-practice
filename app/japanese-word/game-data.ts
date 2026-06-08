@@ -3,8 +3,10 @@ export type ConjugationType = "passive" | "potential" | "causative" | "causative
 export interface JapaneseVerbEntry {
   dictionary: string;
   meaning: string;
+  romaji?: string;
   group: "godan" | "ichidan" | "irregular";
   forms: Record<ConjugationType, string>;
+  exampleSentence?: string;
 }
 
 export interface JapaneseWordQuestion {
@@ -31,6 +33,7 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
   {
     dictionary: "食べる",
     meaning: "吃",
+    romaji: "taberu",
     group: "ichidan",
     forms: {
       passive: "食べられる",
@@ -38,10 +41,12 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
       causative: "食べさせる",
       causativepassive: "食べさせられる",
     },
+    exampleSentence: "母は子供に野菜を食べさせる。",
   },
   {
     dictionary: "見る",
     meaning: "看",
+    romaji: "miru",
     group: "ichidan",
     forms: {
       passive: "見られる",
@@ -49,10 +54,12 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
       causative: "見させる",
       causativepassive: "見させられる",
     },
+    exampleSentence: "母は子供に映画を見させる。",
   },
   {
     dictionary: "起きる",
     meaning: "起床",
+    romaji: "okiru",
     group: "ichidan",
     forms: {
       passive: "起きられる",
@@ -60,10 +67,12 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
       causative: "起きさせる",
       causativepassive: "起きさせられる",
     },
+    exampleSentence: "母は子供を朝７時に起きさせる。",
   },
   {
     dictionary: "書く",
     meaning: "写",
+    romaji: "kaku",
     group: "godan",
     forms: {
       passive: "書かれる",
@@ -71,10 +80,12 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
       causative: "書かせる",
       causativepassive: "書かせられる",
     },
+    exampleSentence: "先生は生徒にレポートを書かせる。",
   },
   {
     dictionary: "話す",
     meaning: "说",
+    romaji: "hanasu",
     group: "godan",
     forms: {
       passive: "話される",
@@ -82,10 +93,12 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
       causative: "話させる",
       causativepassive: "話させられる",
     },
+    exampleSentence: "先生は学生に日本語で話させる。",
   },
   {
     dictionary: "読む",
     meaning: "读",
+    romaji: "yomu",
     group: "godan",
     forms: {
       passive: "読まれる",
@@ -93,10 +106,12 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
       causative: "読ませる",
       causativepassive: "読ませられる",
     },
+    exampleSentence: "父は息子に本を毎晩読ませる。",
   },
   {
     dictionary: "泳ぐ",
     meaning: "游泳",
+    romaji: "oyogu",
     group: "godan",
     forms: {
       passive: "泳がれる",
@@ -104,10 +119,12 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
       causative: "泳がせる",
       causativepassive: "泳がせられる",
     },
+    exampleSentence: "コーチは選手たちでプールを泳がせる。",
   },
   {
     dictionary: "待つ",
     meaning: "等",
+    romaji: "matsu",
     group: "godan",
     forms: {
       passive: "待たれる",
@@ -115,10 +132,12 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
       causative: "待たせる",
       causativepassive: "待たせられる",
     },
+    exampleSentence: "駅で客を１０分待たせる。",
   },
   {
     dictionary: "買う",
     meaning: "买",
+    romaji: "kau",
     group: "godan",
     forms: {
       passive: "買われる",
@@ -126,10 +145,12 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
       causative: "買わせる",
       causativepassive: "買わせられる",
     },
+    exampleSentence: "母は子供を一緒に果物を買わせる。",
   },
   {
     dictionary: "飲む",
     meaning: "喝",
+    romaji: "nomu",
     group: "godan",
     forms: {
       passive: "飲まれる",
@@ -137,10 +158,12 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
       causative: "飲ませる",
       causativepassive: "飲ませられる",
     },
+    exampleSentence: "医者は患者に薬を飲ませる。",
   },
   {
     dictionary: "来る",
     meaning: "来",
+    romaji: "kuru",
     group: "irregular",
     forms: {
       passive: "来られる",
@@ -148,10 +171,12 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
       causative: "来させる",
       causativepassive: "来させられる",
     },
+    exampleSentence: "駅へ友達を来させる。",
   },
   {
     dictionary: "する",
     meaning: "做",
+    romaji: "suru",
     group: "irregular",
     forms: {
       passive: "される",
@@ -159,6 +184,7 @@ export const japaneseWordDeck: JapaneseVerbEntry[] = [
       causative: "させる",
       causativepassive: "させられる",
     },
+    exampleSentence: "先生は学生に宿題をさせる。",
   },
 ];
 
