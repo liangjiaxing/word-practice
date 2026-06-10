@@ -74,8 +74,8 @@ export default function FlashCardPractice({ words }: FlashCardPracticeProps) {
     pointerStart.current = null;
 
     if (!isHorizontalSwipe) return;
-    if (deltaX < 0) showPreviousWord();
-    else showNextWord();
+    if (deltaX < 0) showNextWord();
+    else showPreviousWord();
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLElement>) {
