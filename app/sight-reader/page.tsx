@@ -5,21 +5,20 @@ import "./page.css";
 
 export type NotePitch = "C" | "D" | "E" | "F" | "G" | "A" | "B";
 
-const SVG_W = 200;
-const SVG_H = 140;
-const STAFF_Y_TOP = 20;
+const SVG_W = 240;
+const SVG_H = 170;
+const STAFF_Y_TOP = 22;
 const STAFF_GAP = 12;
 const Y_FOR = (idx: number) => STAFF_Y_TOP + idx * STAFF_GAP;
-const NOTE_X = 110;
+const NOTE_X = 120;
 
-// Treble clef: lines from bottom to top E4, G4, B4, D5, F5
-// In the SVG y grows downward, so the top staff line maps to the highest pitch (F5)
-// and the bottom line maps to the lowest (E4).
-// Line indices: 0=top(F5), 2=2nd-top(D5), 4=mid(B4), 6=2nd-bottom(G4), 8=bottom(E4)
+// Treble clef: lines from bottom to top E4(=8), G4(=6), B4(=4), D5(=2), F5(=0)
+// SVG y grows downward; 0=top staff line, 8=bottom staff line.
+// Basic range for beginners: C4..B4.
 const PITCH_INDEX: Record<NotePitch, number> = {
-  C: 3,  // C5 (3rd space)
-  D: 2,  // D5 (4th line)
-  E: 8,  // E4 (1st/bottom line)
+  C: 10, // C4 middle C (1 ledger line below staff)
+  D: 9,  // D4 (just below bottom staff line)
+  E: 8,  // E4 (bottom staff line)
   F: 7,  // F4 (1st space)
   G: 6,  // G4 (2nd line)
   A: 5,  // A4 (2nd space)
