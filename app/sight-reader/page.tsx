@@ -1,39 +1,133 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { buildQuestion, type StaffQuestion } from "./game-data";
+import { useMemo, useState } from "react";
+import type { StaffQuestion } from "./game-data";
 import "./page.css";
 
-export default function SightReaderPage() {
-  const [sequence, setSequence] = useState<StaffQuestion[]>(() => {
-    const q = buildQuestion();
-    return [q];
-  });
+type NotePitch = StaffQuestion["answer"];
+
+const OPTIONS: NotePitch[] = ["C", "D", "E", "F", "G", "A", "B"];
+const SVG_W = 180;
+const SVG_H = 100;
+const PAD = 18;
+const LEFT = PAD;
+const RIGHT = SVG_W - PAD;
+const STAFF_Y_TOP = 30;
+const STAFF_GAP = 8;
+const Y_FOR = (idx: number) => STAFF_Y_TOP + idx * STAFF_GAP;
+const NOTE_X = 70;
+
+const PITCH_INDEX: Record<NotePitch, number> = {
+  C: 5,
+  D: 6,
+  E: 0,
+  F: 1,
+  G: 2,
+  A: 3,
+  B: 4,
+};
+
+function yForNote(pitch: NotePitch) {
+  return Y_FOR(PITCH_INDEX[pitch]);
+}
+
+function Staff({ pitch }: { pitch: NotePitch }) {
+  const lineIndices = [0, 2, 4, 6];
+  const y = yForNote(pitch);
+
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox={`0 0 ${SVG_W} ${SVG_H}`}
+      role="img"
+      aria-label="五线谱音符"
+      style={{ width: "100%", height: "auto", display: "block" }}
+    >
+      <rect width={SVG_W} height={SVG_H} fill="#ffffff" rx={10} ry={10} />
+
+      {lineIndices.map((i) => {
+        const ly = Y_FOR(i);
+        return (
+          <line
+            key={i}
+            x1={LEFT} y1={ly} x2={RIGHT} y2={ly}
+            stroke="#0f172a"
+            strokeWidth={1.6}
+          />
+        );
+      })}
+
+      <ellipse
+        cx={NOTE_X}
+        cy={y}
+        rx={6.5}
+        ry={4.8}
+        transform={`rotate(-14 ${NOTE_X} ${y})`}
+        fill="#0f172a"
+      />
+
+      {pitch === "C" && (
+        <line
+          x1={NOTE_X - 10} y1={y}
+          x2={NOTE_X + 10} y2={y}
+          stroke="#0f172a"
+          strokeWidth={2}
+        />
+      )}
+    </svg>
+  );
+}
+
+export default function SightReaderGame() {
+  const [sequence, setSequence] = useState<StaffQuestion[]>(() => [
+    import("./game-data").then((m) => m.buildQuestion()),
+  ]);
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
   const [answeredCount, setAnsweredCount] = useState(0);
+  const [questions, setQuestions] = useState<StaffQuestion[]>([]);
 
-  const question = sequence[index];
+  const question = questions[index];
   const isAnswered = selected !== null;
-  const isCorrect = selected === question.answer;
+  const isCorrect = selected === question?.answer;
+
+  const finished = index >= 10;
+
+  const scoreText = useMemo(() => {
+    if (!finished) return "";
+    if (correctCount === 10) return "🎉 满分！";
+    if (correctCount >= 7) return `做对了 ${correctCount} / 10，不错！`;
+    return `正确率 ${((correctCount / 10) * 100).toFixed(0)}%，继续加油！`;
+  }, [finished, correctCount]);
+
+  const options = useMemo(() => {
+    if (!question) return OPTIONS;
+    const pool = OPTIONS.filter((n) => n !== question.answer);
+    const chosen = new Set<string>();
+    while (chosen.size < 3) {
+      chosen.add(pool[Math.floor(Math.random() * pool.length)]);
+    }
+    const out = Array.from(chosen) as NotePitch[];
+    out.push(question.answer);
+    return out.sort(() => Math.random() - 0.5);
+  }, [question]);
 
   function reset() {
-    setSequence((prev) => {
-      const all: StaffQuestion[] = [...prev, buildQuestion()];
-      if (isAnswered && index + 1 >= 10) {
-        setSelected(null);
-        setAnsweredCount(0);
-        setCorrectCount(0);
-        setIndex(0);
-        return [buildQuestion()];
-      }
-      return all;
-    });
+    setSequence(
+      Array.from({ length: 10 }, () =>
+        import("./game-data").then((m) => m.buildQuestion()),
+      ),
+    );
+    setIndex(0);
+    setSelected(null);
+    setCorrectCount(0);
+    setAnsweredCount(0);
+    setQuestions([]);
   }
 
   function pick(option: string) {
-    if (isAnswered || answeredCount >= 10) return;
+    if (isAnswered || answeredCount >= 10 || !question) return;
     setSelected(option);
     setAnsweredCount((n) => n + 1);
     if (option === question.answer) {
@@ -42,38 +136,31 @@ export default function SightReaderPage() {
   }
 
   function next() {
-    setIndex((n) => n + 1);
-    setSelected(null);
     if (!isAnswered) return;
     if (index + 1 >= 10) {
-      setTimeout(() => {
-        setSelected(null);
-        setAnsweredCount(0);
-        setCorrectCount(0);
-        setIndex(0);
-      }, 0);
+      reset();
       return;
     }
+    setIndex((n) => n + 1);
+    setSelected(null);
   }
 
-  const finished = index >= 10;
-  const scoreText = finished
-    ? correctCount === 10
-      ? "🎉 满分！五线谱小天才"
-      : correctCount >= 7
-        ? `做对了 ${correctCount} 题 / 10`
-        : `正确率 ${((correctCount / 10) * 100).toFixed(0)}%，继续加油！`
-    : "";
+  if (!question) {
+    return (
+      <main className="sr-app">
+        <h1>五线谱辨识游戏</h1>
+        <p className="sr-subtitle">正在出题...</p>
+      </main>
+    );
+  }
 
   return (
     <main className="sr-app">
       <h1>五线谱辨识游戏</h1>
-      <p className="sr-subtitle">
-        听/看谱子，选出对应的音名 C D E F G A B。共 10 题，最后打分。
-      </p>
+      <p className="sr-subtitle">选出这个音符的音名 C D E F G A B，共 10 题。</p>
 
       <div className="sr-meta">
-        <span>第 {index + 1} / 10 题</span>
+        <span>第 {Math.min(index + 1, 10)} / 10 题</span>
         <span>正确 {correctCount}</span>
       </div>
 
@@ -86,16 +173,10 @@ export default function SightReaderPage() {
         </div>
       ) : (
         <div className="sr-card">
-          <div className="sr-prompt">读出下列音符（高音或低音谱号）对应的唱名</div>
-
-          <div className="sr-staff-wrap" dangerouslySetInnerHTML={{ __html: question.svg }} />
-
-          <div className="sr-warning">
-            ⚠️ 暂不支持音频播放，请通过视觉判断后进行选择。
-          </div>
+          <Staff pitch={question.answer as NotePitch} />
 
           <div className="sr-choice-grid">
-            {question.options.map((option) => {
+            {options.map((option) => {
               const isChoiceCorrect = option === question.answer;
               const stateClass = !isAnswered
                 ? ""
