@@ -5,38 +5,31 @@ import "./page.css";
 
 export type NotePitch = "C" | "D" | "E" | "F" | "G" | "A" | "B";
 
-type Question = { answer: NotePitch };
-type ChoiceState = "idle" | "correct" | "wrong";
-
-const SVG_W = 180;
-const SVG_H = 100;
-const STAFF_Y_TOP = 30;
+const SVG_W = 200;
+const SVG_H = 140;
+const STAFF_Y_TOP = 20;
 const STAFF_GAP = 12;
 const Y_FOR = (idx: number) => STAFF_Y_TOP + idx * STAFF_GAP;
 const NOTE_X = 110;
 
+// Treble clef: lines E4(=0), G4(=2), B4(=4), D5(=6), F5(=8)
 const PITCH_INDEX: Record<NotePitch, number> = {
-  C: 5,
-  D: 6,
-  E: 0,
-  F: 1,
-  G: 2,
-  A: 3,
-  B: 4,
+  C: 5,  // C5 (3rd space)
+  D: 6,  // D5 (4th line)
+  E: 0,  // E4 (1st line)
+  F: 1,  // F4 (1st space)
+  G: 2,  // G4 (2nd line)
+  A: 3,  // A4 (2nd space)
+  B: 4,  // B4 (3rd line)
 };
 
 function yForNote(pitch: NotePitch) {
   return Y_FOR(PITCH_INDEX[pitch]);
 }
 
-function makeQuestion(): Question {
-  const all: NotePitch[] = ["C", "D", "E", "F", "G", "A", "B"];
-  const answer = all[Math.floor(Math.random() * all.length)];
-  return { answer };
-}
-
 function StaffSVG({ pitch }: { pitch: NotePitch }) {
-  const lineIndices = [0, 2, 4, 6];
+  // 5 staff line indices: 0,2,4,6,8
+  const lineIndices = [0, 2, 4, 6, 8];
   const y = yForNote(pitch);
 
   return (
@@ -49,27 +42,30 @@ function StaffSVG({ pitch }: { pitch: NotePitch }) {
     >
       <rect width={SVG_W} height={SVG_H} fill="#ffffff" rx={10} ry={10} />
 
+      {/* 5 staff lines */}
       {lineIndices.map((i) => {
         const ly = Y_FOR(i);
         return (
           <line
             key={i}
-            x1={18} y1={ly} x2={SVG_W - 18} y2={ly}
+            x1={24} y1={ly} x2={SVG_W - 24} y2={ly}
             stroke="#0f172a"
             strokeWidth={1.8}
           />
         );
       })}
 
+      {/* Notehead */}
       <ellipse
         cx={NOTE_X}
         cy={y}
-        rx={7}
-        ry={5}
+        rx={8}
+        ry={5.5}
         transform={`rotate(-14 ${NOTE_X} ${y})`}
         fill="#0f172a"
       />
 
+      {/* Ledger line for C5 (middle C area below staff) */}
       {pitch === "C" && (
         <line
           x1={NOTE_X - 12} y1={y}
@@ -83,15 +79,21 @@ function StaffSVG({ pitch }: { pitch: NotePitch }) {
 }
 
 export default function SightReaderPage() {
-  const [question, setQuestion] = useState<Question>(makeQuestion);
+  const [question, setQuestion] = useState<{ answer: NotePitch }>(() => makeQuestion());
   const [choice, setChoice] = useState<NotePitch | null>(null);
-  const [state, setState] = useState<ChoiceState>("idle");
+  const [state, setState] = useState<"idle" | "correct" | "wrong">("idle");
   const [round, setRound] = useState(0);
   const [score, setScore] = useState(0);
 
   const totalRounds = 10;
   const currentRound = Math.min(round + 1, totalRounds);
   const finished = round >= totalRounds;
+
+  function makeQuestion(): { answer: NotePitch } {
+    const all: NotePitch[] = ["C", "D", "E", "F", "G", "A", "B"];
+    const answer = all[Math.floor(Math.random() * all.length)];
+    return { answer };
+  }
 
   function pick(pitch: NotePitch) {
     if (state !== "idle") return;
@@ -128,14 +130,14 @@ export default function SightReaderPage() {
   })();
 
   const choices: NotePitch[] = [
-    ...(["C","D","E","F","G","A","B"] as NotePitch[]).filter((n) => n !== question.answer),
+    ...(["C", "D", "E", "F", "G", "A", "B"] as NotePitch[]).filter((n) => n !== question.answer),
     question.answer,
   ].sort(() => Math.random() - 0.5);
 
   return (
     <main className="sr-app">
       <h1>五线谱辨识游戏</h1>
-      <p className="sr-subtitle">选出这个音符的音名 C D E F G A B。</p>
+      <p className="sr-subtitle">选出这个音符的音名 C D E F G A B，共 10 题。</p>
       <div className="sr-meta">
         <span>第 {currentRound} / {totalRounds} 题</span>
         <span>正确 {score}</span>
