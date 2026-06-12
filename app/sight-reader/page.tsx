@@ -1,21 +1,19 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import type { StaffQuestion } from "./game-data";
+import { useState } from "react";
 import "./page.css";
 
-type NotePitch = StaffQuestion["answer"];
+export type NotePitch = "C" | "D" | "E" | "F" | "G" | "A" | "B";
 
-const OPTIONS: NotePitch[] = ["C", "D", "E", "F", "G", "A", "B"];
+type Question = { answer: NotePitch };
+type ChoiceState = "idle" | "correct" | "wrong";
+
 const SVG_W = 180;
 const SVG_H = 100;
-const PAD = 18;
-const LEFT = PAD;
-const RIGHT = SVG_W - PAD;
 const STAFF_Y_TOP = 30;
-const STAFF_GAP = 8;
+const STAFF_GAP = 12;
 const Y_FOR = (idx: number) => STAFF_Y_TOP + idx * STAFF_GAP;
-const NOTE_X = 70;
+const NOTE_X = 110;
 
 const PITCH_INDEX: Record<NotePitch, number> = {
   C: 5,
@@ -31,7 +29,13 @@ function yForNote(pitch: NotePitch) {
   return Y_FOR(PITCH_INDEX[pitch]);
 }
 
-function Staff({ pitch }: { pitch: NotePitch }) {
+function makeQuestion(): Question {
+  const all: NotePitch[] = ["C", "D", "E", "F", "G", "A", "B"];
+  const answer = all[Math.floor(Math.random() * all.length)];
+  return { answer };
+}
+
+function StaffSVG({ pitch }: { pitch: NotePitch }) {
   const lineIndices = [0, 2, 4, 6];
   const y = yForNote(pitch);
 
@@ -50,9 +54,9 @@ function Staff({ pitch }: { pitch: NotePitch }) {
         return (
           <line
             key={i}
-            x1={LEFT} y1={ly} x2={RIGHT} y2={ly}
+            x1={18} y1={ly} x2={SVG_W - 18} y2={ly}
             stroke="#0f172a"
-            strokeWidth={1.6}
+            strokeWidth={1.8}
           />
         );
       })}
@@ -60,16 +64,16 @@ function Staff({ pitch }: { pitch: NotePitch }) {
       <ellipse
         cx={NOTE_X}
         cy={y}
-        rx={6.5}
-        ry={4.8}
+        rx={7}
+        ry={5}
         transform={`rotate(-14 ${NOTE_X} ${y})`}
         fill="#0f172a"
       />
 
       {pitch === "C" && (
         <line
-          x1={NOTE_X - 10} y1={y}
-          x2={NOTE_X + 10} y2={y}
+          x1={NOTE_X - 12} y1={y}
+          x2={NOTE_X + 12} y2={y}
           stroke="#0f172a"
           strokeWidth={2}
         />
@@ -78,123 +82,91 @@ function Staff({ pitch }: { pitch: NotePitch }) {
   );
 }
 
-export default function SightReaderGame() {
-  const [sequence, setSequence] = useState<StaffQuestion[]>(() => [
-    import("./game-data").then((m) => m.buildQuestion()),
-  ]);
-  const [index, setIndex] = useState(0);
-  const [selected, setSelected] = useState<string | null>(null);
-  const [correctCount, setCorrectCount] = useState(0);
-  const [answeredCount, setAnsweredCount] = useState(0);
-  const [questions, setQuestions] = useState<StaffQuestion[]>([]);
+export default function SightReaderPage() {
+  const [question, setQuestion] = useState<Question>(makeQuestion);
+  const [choice, setChoice] = useState<NotePitch | null>(null);
+  const [state, setState] = useState<ChoiceState>("idle");
+  const [round, setRound] = useState(0);
+  const [score, setScore] = useState(0);
 
-  const question = questions[index];
-  const isAnswered = selected !== null;
-  const isCorrect = selected === question?.answer;
+  const totalRounds = 10;
+  const currentRound = Math.min(round + 1, totalRounds);
+  const finished = round >= totalRounds;
 
-  const finished = index >= 10;
-
-  const scoreText = useMemo(() => {
-    if (!finished) return "";
-    if (correctCount === 10) return "🎉 满分！";
-    if (correctCount >= 7) return `做对了 ${correctCount} / 10，不错！`;
-    return `正确率 ${((correctCount / 10) * 100).toFixed(0)}%，继续加油！`;
-  }, [finished, correctCount]);
-
-  const options = useMemo(() => {
-    if (!question) return OPTIONS;
-    const pool = OPTIONS.filter((n) => n !== question.answer);
-    const chosen = new Set<string>();
-    while (chosen.size < 3) {
-      chosen.add(pool[Math.floor(Math.random() * pool.length)]);
-    }
-    const out = Array.from(chosen) as NotePitch[];
-    out.push(question.answer);
-    return out.sort(() => Math.random() - 0.5);
-  }, [question]);
-
-  function reset() {
-    setSequence(
-      Array.from({ length: 10 }, () =>
-        import("./game-data").then((m) => m.buildQuestion()),
-      ),
-    );
-    setIndex(0);
-    setSelected(null);
-    setCorrectCount(0);
-    setAnsweredCount(0);
-    setQuestions([]);
-  }
-
-  function pick(option: string) {
-    if (isAnswered || answeredCount >= 10 || !question) return;
-    setSelected(option);
-    setAnsweredCount((n) => n + 1);
-    if (option === question.answer) {
-      setCorrectCount((n) => n + 1);
-    }
+  function pick(pitch: NotePitch) {
+    if (state !== "idle") return;
+    const ok = pitch === question.answer;
+    setChoice(pitch);
+    setState(ok ? "correct" : "wrong");
+    if (ok) setScore((s) => s + 1);
   }
 
   function next() {
-    if (!isAnswered) return;
-    if (index + 1 >= 10) {
-      reset();
+    if (state === "idle") return;
+    if (round + 1 >= totalRounds) {
+      setRound(0);
+      setScore(0);
+      setQuestion(makeQuestion());
+      setChoice(null);
+      setState("idle");
       return;
     }
-    setIndex((n) => n + 1);
-    setSelected(null);
+    setRound((n) => n + 1);
+    setQuestion(makeQuestion());
+    setChoice(null);
+    setState("idle");
   }
 
-  if (!question) {
-    return (
-      <main className="sr-app">
-        <h1>五线谱辨识游戏</h1>
-        <p className="sr-subtitle">正在出题...</p>
-      </main>
-    );
-  }
+  const feedbackText =
+    state === "correct" ? "回答正确！" : `回答错误，正确答案是 ${question.answer}`;
+
+  const scoreText = (() => {
+    if (!finished) return "";
+    if (score === 10) return "🎉 满分！五线谱小天才";
+    if (score >= 7) return `做对了 ${score} / 10，不错！`;
+    return `正确率 ${((score / totalRounds) * 100).toFixed(0)}%，继续加油！`;
+  })();
+
+  const choices: NotePitch[] = [
+    ...(["C","D","E","F","G","A","B"] as NotePitch[]).filter((n) => n !== question.answer),
+    question.answer,
+  ].sort(() => Math.random() - 0.5);
 
   return (
     <main className="sr-app">
       <h1>五线谱辨识游戏</h1>
-      <p className="sr-subtitle">选出这个音符的音名 C D E F G A B，共 10 题。</p>
-
+      <p className="sr-subtitle">选出这个音符的音名 C D E F G A B。</p>
       <div className="sr-meta">
-        <span>第 {Math.min(index + 1, 10)} / 10 题</span>
-        <span>正确 {correctCount}</span>
+        <span>第 {currentRound} / {totalRounds} 题</span>
+        <span>正确 {score}</span>
       </div>
 
       {finished ? (
         <div className="sr-feedback success">
           <div className="sr-score">{scoreText}</div>
-          <button type="button" className="sr-next-btn" onClick={reset}>
+          <button type="button" className="sr-next-btn" onClick={() => setRound(0)}>
             再来一次
           </button>
         </div>
       ) : (
         <div className="sr-card">
-          <Staff pitch={question.answer as NotePitch} />
+          <StaffSVG pitch={question.answer} />
 
           <div className="sr-choice-grid">
-            {options.map((option) => {
-              const isChoiceCorrect = option === question.answer;
-              const stateClass = !isAnswered
-                ? ""
-                : isChoiceCorrect
-                  ? " correct"
-                  : option === selected
-                    ? " wrong"
-                    : "";
-
+            {choices.map((option) => {
+              const isCorrect = option === question.answer;
+              let cls = "sr-choice";
+              if (state !== "idle") {
+                if (isCorrect) cls += " correct";
+                else if (state === "wrong" && option === choice) cls += " wrong";
+              }
               return (
                 <button
                   key={option}
                   type="button"
-                  data-choice="true"
-                  data-correct={isChoiceCorrect ? "true" : "false"}
-                  className={`sr-choice${stateClass}`}
+                  className={cls}
                   onClick={() => pick(option)}
-                  disabled={isAnswered}
+                  disabled={state !== "idle"}
                 >
                   {option}
                 </button>
@@ -202,17 +174,16 @@ export default function SightReaderGame() {
             })}
           </div>
 
-          {isAnswered ? (
-            <div className={isCorrect ? "sr-feedback success" : "sr-feedback error"}>
-              <p>{isCorrect ? "回答正确！" : `回答错误，正确答案是 ${question.answer}`}</p>
+          {state !== "idle" && (
+            <div className={state === "correct" ? "sr-feedback success" : "sr-feedback error"}>
+              <p>{feedbackText}</p>
             </div>
-          ) : null}
-
-          {isAnswered ? (
+          )}
+          {state !== "idle" && (
             <button type="button" className="sr-next-btn" onClick={next}>
-              {index + 1 >= 10 ? "完成任务 →" : "下一题 →"}
+              {round + 1 >= totalRounds ? "完成任务 →" : "下一题 →"}
             </button>
-          ) : null}
+          )}
         </div>
       )}
     </main>
