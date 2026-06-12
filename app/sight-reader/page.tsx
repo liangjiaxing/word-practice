@@ -12,14 +12,17 @@ const STAFF_GAP = 12;
 const Y_FOR = (idx: number) => STAFF_Y_TOP + idx * STAFF_GAP;
 const NOTE_X = 110;
 
-// Treble clef: lines E4(=0), G4(=2), B4(=4), D5(=6), F5(=8)
+// Treble clef: lines from bottom to top E4, G4, B4, D5, F5
+// In the SVG y grows downward, so the top staff line maps to the highest pitch (F5)
+// and the bottom line maps to the lowest (E4).
+// Line indices: 0=top(F5), 2=2nd-top(D5), 4=mid(B4), 6=2nd-bottom(G4), 8=bottom(E4)
 const PITCH_INDEX: Record<NotePitch, number> = {
-  C: 5,  // C5 (3rd space)
-  D: 6,  // D5 (4th line)
-  E: 0,  // E4 (1st line)
-  F: 1,  // F4 (1st space)
-  G: 2,  // G4 (2nd line)
-  A: 3,  // A4 (2nd space)
+  C: 3,  // C5 (3rd space)
+  D: 2,  // D5 (4th line)
+  E: 8,  // E4 (1st/bottom line)
+  F: 7,  // F4 (1st space)
+  G: 6,  // G4 (2nd line)
+  A: 5,  // A4 (2nd space)
   B: 4,  // B4 (3rd line)
 };
 
