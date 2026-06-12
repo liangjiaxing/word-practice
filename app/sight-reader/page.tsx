@@ -12,17 +12,21 @@ const STAFF_GAP = 12;
 const Y_FOR = (idx: number) => STAFF_Y_TOP + idx * STAFF_GAP;
 const NOTE_X = 120;
 
-// Treble clef: lines from bottom to top E4(=8), G4(=6), B4(=4), D5(=2), F5(=0)
-// SVG y grows downward; 0=top staff line, 8=bottom staff line.
-// Basic range for beginners: C4..B4.
+// Treble clef, y grows downward.
+// Top staff line index 0  -> F5
+//                   2  -> D5
+//                   4  -> B4
+//                   6  -> G4
+//                8(bottom) -> E4
+// Spaces between lines: between 0-2=E5, between 2-4=C5, between 4-6=A4, between 6-8=F4
 const PITCH_INDEX: Record<NotePitch, number> = {
-  C: 10, // C4 middle C (1 ledger line below staff)
-  D: 9,  // D4 (just below bottom staff line)
-  E: 8,  // E4 (bottom staff line)
-  F: 7,  // F4 (1st space)
-  G: 6,  // G4 (2nd line)
-  A: 5,  // A4 (2nd space)
-  B: 4,  // B4 (3rd line)
+  E: 8, // bottom staff line
+  F: 7,
+  G: 6,
+  A: 5,
+  B: 4,
+  C: 3, // 3rd space (C5)
+  D: 2, // 4th line
 };
 
 function yForNote(pitch: NotePitch) {
@@ -44,20 +48,7 @@ function StaffSVG({ pitch }: { pitch: NotePitch }) {
     >
       <rect width={SVG_W} height={SVG_H} fill="#ffffff" rx={10} ry={10} />
 
-      {/* 5 staff lines */}
-      {lineIndices.map((i) => {
-        const ly = Y_FOR(i);
-        return (
-          <line
-            key={i}
-            x1={24} y1={ly} x2={SVG_W - 24} y2={ly}
-            stroke="#0f172a"
-            strokeWidth={1.8}
-          />
-        );
-      })}
-
-      {/* Notehead */}
+      {/* Notehead (rendered first so staff line cuts through it for on-line notes) */}
       <ellipse
         cx={NOTE_X}
         cy={y}
@@ -70,12 +61,30 @@ function StaffSVG({ pitch }: { pitch: NotePitch }) {
       {/* Ledger line for C5 (middle C area below staff) */}
       {pitch === "C" && (
         <line
-          x1={NOTE_X - 12} y1={y}
-          x2={NOTE_X + 12} y2={y}
+          x1={NOTE_X - 12}
+          y1={y}
+          x2={NOTE_X + 12}
+          y2={y}
           stroke="#0f172a"
-          strokeWidth={2}
+          strokeWidth={4}
         />
       )}
+
+      {/* 5 staff lines (rendered after note so line passes through on-line noteheads) */}
+      {lineIndices.map((i) => {
+        const ly = Y_FOR(i);
+        return (
+          <line
+            key={i}
+            x1={24}
+            y1={ly}
+            x2={SVG_W - 24}
+            y2={ly}
+            stroke="#0f172a"
+            strokeWidth={1.8}
+          />
+        );
+      })}
     </svg>
   );
 }
