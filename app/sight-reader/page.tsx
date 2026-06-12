@@ -61,8 +61,8 @@ function StaffSVG({ pitch }: { pitch: NotePitch }) {
       <ellipse
         cx={NOTE_X}
         cy={y}
-        rx={8}
-        ry={5.5}
+        rx={16}
+        ry={11}
         transform={`rotate(-14 ${NOTE_X} ${y})`}
         fill="#0f172a"
       />
