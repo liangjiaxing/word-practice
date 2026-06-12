@@ -90,19 +90,20 @@ body {
 .sr-choice-grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 8px;
+  gap: 6px;
   margin-bottom: 16px;
 }
 
 .sr-choice {
-  padding: 10px;
-  min-height: 44px;
+  padding: 4px 2px;
+  min-height: 0;
   aspect-ratio: 1 / 1;
   background: #f4f6fd;
   color: var(--sr-text);
-  border-radius: 12px;
+  border-radius: 8px;
   border: none;
-  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
