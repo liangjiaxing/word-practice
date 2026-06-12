@@ -131,10 +131,7 @@ export default function SightReaderPage() {
     return `正确率 ${((score / totalRounds) * 100).toFixed(0)}%，继续加油！`;
   })();
 
-  const choices: NotePitch[] = [
-    ...(["C", "D", "E", "F", "G", "A", "B"] as NotePitch[]).filter((n) => n !== question.answer),
-    question.answer,
-  ].sort(() => Math.random() - 0.5);
+  const options: NotePitch[] = ["C", "D", "E", "F", "G", "A", "B"];
 
   return (
     <main className="sr-app">
@@ -157,7 +154,7 @@ export default function SightReaderPage() {
           <StaffSVG pitch={question.answer} />
 
           <div className="sr-choice-grid">
-            {choices.map((option) => {
+            {options.map((option) => {
               const isCorrect = option === question.answer;
               let cls = "sr-choice";
               if (state !== "idle") {
