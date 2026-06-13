@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { hasSupabaseEnv } from "@/lib/supabaseEnv";
 import PracticeModes from "./components/PracticeModes";
 import SightReaderLink from "./sight-reader/SightReaderLink";
 import "./page.css";
@@ -6,12 +6,16 @@ import "./page.css";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const { data: words } = await supabase
-    .from("words")
-    .select("id, word")
-    .order("created_at", { ascending: false });
-
-  const wordRows = words ?? [];
+  const wordRows = hasSupabaseEnv()
+    ? await (async () => {
+        const { supabase } = await import("@/lib/supabase");
+        const { data: words } = await supabase
+          .from("words")
+          .select("id, word")
+          .order("created_at", { ascending: false });
+        return words ?? [];
+      })()
+    : [];
 
   return (
     <main className="app">
