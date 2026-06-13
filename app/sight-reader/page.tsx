@@ -10,25 +10,30 @@ export type NotePitch = "C" | "D" | "E" | "F" | "G" | "A" | "B";
 const PITCHES: NotePitch[] = ["C", "D", "E", "F", "G", "A", "B"];
 
 const SVG_W = 240;
-const SVG_H = 150;
+const SVG_H = 170;
 const STAFF_Y_MIN = 22;
 const LINE_GAP = 12;
 const NOTE_X = 120;
 const SVG_PAD = 24;
 
+// Staff lines use indices 0,2,4,6,8 so visual spacing = LINE_GAP * 2 = 24px.
+const STAFF_LINE_INDICES = [0, 2, 4, 6, 8] as const;
+
 const Y_FOR = (index: number) => STAFF_Y_MIN + index * LINE_GAP;
 
+// C4-B4 area.
+// E4 = bottom staff line (index 8)
+// D4 = 1 ledger below (index 9)
+// C4 = 2 ledgers below (index 10)
 const PITCH_Y: Record<NotePitch, { y: number; ledger: boolean }> = {
-  C: { y: Y_FOR(4.5), ledger: true },
-  D: { y: Y_FOR(4), ledger: true },
-  E: { y: Y_FOR(3.5), ledger: false },
-  F: { y: Y_FOR(3), ledger: false },
-  G: { y: Y_FOR(2.5), ledger: false },
-  A: { y: Y_FOR(2), ledger: false },
-  B: { y: Y_FOR(1.5), ledger: false },
+  E: { y: Y_FOR(8), ledger: false },
+  F: { y: Y_FOR(7), ledger: false },
+  G: { y: Y_FOR(6), ledger: false },
+  A: { y: Y_FOR(5), ledger: false },
+  B: { y: Y_FOR(4), ledger: false },
+  D: { y: Y_FOR(9), ledger: true },
+  C: { y: Y_FOR(10), ledger: true },
 };
-
-const STAFF_LINE_INDICES = [0, 1, 2, 3, 4] as const;
 
 function StaffSVG({ pitch }: { pitch: NotePitch }) {
   const { y, ledger } = PITCH_Y[pitch];
