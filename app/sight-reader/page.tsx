@@ -1,42 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import "./page.css";
 
 export type NotePitch = "C" | "D" | "E" | "F" | "G" | "A" | "B";
 
 const SVG_W = 240;
-const SVG_H = 170;
-const STAFF_Y_TOP = 22;
-const STAFF_GAP = 12;
-const Y_FOR = (idx: number) => STAFF_Y_TOP + idx * STAFF_GAP;
+const SVG_H = 150;
+const STAFF_Y_MIN = 22;
+const LINE_GAP = 12;
 const NOTE_X = 120;
+const SVG_PAD = 24;
 
-// Treble clef, y grows downward.
-// Top staff line index 0  -> F5
-//                   2  -> D5
-//                   4  -> B4
-//                   6  -> G4
-//                8(bottom) -> E4
-// Spaces between lines: between 0-2=E5, between 2-4=C5, between 4-6=A4, between 6-8=F4
-const PITCH_INDEX: Record<NotePitch, number> = {
-  E: 8, // bottom staff line
-  F: 7,
-  G: 6,
-  A: 5,
-  B: 4,
-  C: 3, // 3rd space (C5)
-  D: 2, // 4th line
+// Vertical index from the top staff line.
+// Staff lines sit at 0, 1, 2, 3, 4.
+// Every half step = 0.5 index (6px with 12px line gap).
+// Below staff: 4.5 = first ledger line, 5 = second ledger line.
+const Y_FOR = (index: number) => STAFF_Y_MIN + index * LINE_GAP;
+
+const NOTE_LINE_INDEX: Record<NotePitch, number> = {
+  E: 4, // bottom staff line
+  F: 3.5,
+  G: 3,
+  A: 2.5,
+  B: 2,
+  D: 4.5, // first ledger below staff (D4)
+  C: 5, // second ledger below staff (C4)
 };
 
-function yForNote(pitch: NotePitch) {
-  return Y_FOR(PITCH_INDEX[pitch]);
+const STAFF_LINE_INDICES = [0, 1, 2, 3, 4] as const;
+
+function yForPitch(pitch: NotePitch) {
+  return Y_FOR(NOTE_LINE_INDEX[pitch]);
 }
 
 function StaffSVG({ pitch }: { pitch: NotePitch }) {
-  // 5 staff line indices: 0,2,4,6,8
-  const lineIndices = [0, 2, 4, 6, 8];
-  const y = yForNote(pitch);
+  const y = yForPitch(pitch);
+  const showCLedger = pitch === "C" || pitch === "D";
 
   return (
     <svg
@@ -48,40 +48,37 @@ function StaffSVG({ pitch }: { pitch: NotePitch }) {
     >
       <rect width={SVG_W} height={SVG_H} fill="#ffffff" rx={10} ry={10} />
 
-      {/* Notehead (rendered first so staff line cuts through it for on-line notes) */}
       <ellipse
         cx={NOTE_X}
         cy={y}
-        rx={16}
-        ry={11}
+        rx={15}
+        ry={10}
         transform={`rotate(-14 ${NOTE_X} ${y})`}
         fill="#0f172a"
       />
 
-      {/* Ledger line for C5 (middle C area below staff) */}
-      {pitch === "C" && (
+      {showCLedger && (
         <line
-          x1={NOTE_X - 12}
+          x1={NOTE_X - 14}
           y1={y}
-          x2={NOTE_X + 12}
+          x2={NOTE_X + 14}
           y2={y}
           stroke="#0f172a"
-          strokeWidth={4}
+          strokeWidth={1.5}
         />
       )}
 
-      {/* 5 staff lines (rendered after note so line passes through on-line noteheads) */}
-      {lineIndices.map((i) => {
+      {STAFF_LINE_INDICES.map((i) => {
         const ly = Y_FOR(i);
         return (
           <line
             key={i}
-            x1={24}
+            x1={SVG_PAD}
             y1={ly}
-            x2={SVG_W - 24}
+            x2={SVG_W - SVG_PAD}
             y2={ly}
             stroke="#0f172a"
-            strokeWidth={1.8}
+            strokeWidth={1.6}
           />
         );
       })}
@@ -90,19 +87,28 @@ function StaffSVG({ pitch }: { pitch: NotePitch }) {
 }
 
 export default function SightReaderPage() {
-  const [question, setQuestion] = useState<{ answer: NotePitch }>(() => makeQuestion());
+  const [question, setQuestion] = useState<{ answer: NotePitch }>(() => makeQuestion(null));
   const [choice, setChoice] = useState<NotePitch | null>(null);
   const [state, setState] = useState<"idle" | "correct" | "wrong">("idle");
   const [round, setRound] = useState(0);
   const [score, setScore] = useState(0);
+  const prevAnswerRef = useRef<NotePitch | null>(null);
 
   const totalRounds = 10;
   const currentRound = Math.min(round + 1, totalRounds);
   const finished = round >= totalRounds;
 
-  function makeQuestion(): { answer: NotePitch } {
+  function makeQuestion(prev: NotePitch | null): { answer: NotePitch } {
     const all: NotePitch[] = ["C", "D", "E", "F", "G", "A", "B"];
-    const answer = all[Math.floor(Math.random() * all.length)];
+    let answer: NotePitch;
+    if (!prev) {
+      answer = all[Math.floor(Math.random() * all.length)];
+    } else {
+      do {
+        answer = all[Math.floor(Math.random() * all.length)];
+      } while (answer === prev);
+    }
+    prevAnswerRef.current = answer;
     return { answer };
   }
 
@@ -117,15 +123,16 @@ export default function SightReaderPage() {
   function next() {
     if (state === "idle") return;
     if (round + 1 >= totalRounds) {
+      prevAnswerRef.current = null;
       setRound(0);
       setScore(0);
-      setQuestion(makeQuestion());
+      setQuestion(makeQuestion(null));
       setChoice(null);
       setState("idle");
       return;
     }
     setRound((n) => n + 1);
-    setQuestion(makeQuestion());
+    setQuestion(makeQuestion(question.answer));
     setChoice(null);
     setState("idle");
   }
