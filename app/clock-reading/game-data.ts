@@ -71,6 +71,24 @@ function timeKey(time: TimeValue): string {
   return `${time.hour}-${time.minute}`;
 }
 
+export function wrapHour(hour: number, delta: number): number {
+  return ((hour - 1 + delta + 120) % 12) + 1;
+}
+
+export function wrapMinute(minute: number, delta: number): number {
+  return (minute + delta + 60) % 60;
+}
+
+export function hourDistance(a: number, b: number): number {
+  const raw = Math.abs(a - b) % 12;
+  return Math.min(raw, 12 - raw);
+}
+
+export function minuteDistance(a: number, b: number): number {
+  const raw = Math.abs(a - b) % 60;
+  return Math.min(raw, 60 - raw);
+}
+
 function pick<T>(items: T[], random: () => number): T {
   return items[Math.floor(random() * items.length)];
 }
@@ -85,11 +103,73 @@ function shuffle<T>(items: T[], random: () => number): T[] {
 }
 
 /**
+ * 按难度排出干扰项的优先级（越靠前越难排除）。
+ *
+ * 原则：干扰项必须是"隔壁"的时刻，不能一眼排除。
+ * - five：分针差 5 分钟（3:15 vs 3:10 / 3:20，逼孩子数格子）
+ *         + 时针差 1 小时但分钟相同（3:15 vs 4:15，逼孩子看清时针走没走过格）
+ * - half：半点时时针正好在两数之间，所以左右相邻的小时最难分辨
+ * - hour：只有整点，用相邻 1~2 个小时来考，时针指哪个数必须看准
+ */
+function distractorTiers(
+  level: ClockLevel,
+  answer: TimeValue,
+): TimeValue[] {
+  const { hour, minute } = answer;
+  const sameHour = (delta: number): TimeValue => ({
+    hour,
+    minute: wrapMinute(minute, delta),
+  });
+  const sameMinute = (delta: number): TimeValue => ({
+    hour: wrapHour(hour, delta),
+    minute,
+  });
+  const otherMinute =
+    level === "half"
+      ? MINUTES_BY_LEVEL.half.filter((value) => value !== minute).map((value) => ({
+          hour,
+          minute: value,
+        }))
+      : [];
+
+  if (level === "hour") {
+    return [
+      sameMinute(1),
+      sameMinute(-1),
+      sameMinute(2),
+      sameMinute(-2),
+      sameMinute(3),
+    ];
+  }
+
+  if (level === "half") {
+    return [
+      sameMinute(1),
+      sameMinute(-1),
+      ...otherMinute,
+      sameMinute(2),
+      sameMinute(-2),
+    ];
+  }
+
+  return [
+    sameHour(5),
+    sameHour(-5),
+    sameMinute(1),
+    sameMinute(-1),
+    sameHour(10),
+    sameHour(-10),
+    sameMinute(2),
+    sameMinute(-2),
+    sameHour(15),
+  ];
+}
+
+/**
  * 生成一道认时钟题目。
  *
- * 干扰项刻意分成两类，逼小朋友同时看时针和分针：
- * - 同一个钟点、不同分钟（考察分针）
- * - 同一个分钟、不同钟点（考察时针）
+ * 干扰项全部取自答案的"邻居"，并按难度分层取前 3 个，所以不会出现
+ * "3:15 的选项里有 10:50" 这种一眼就能排除的情况。
  */
 export function buildQuestion(
   level: ClockLevel,
@@ -105,36 +185,15 @@ export function buildQuestion(
     guard += 1;
   }
 
-  const sameHourPool = shuffle(
-    minutes
-      .filter((minute) => minute !== answer.minute)
-      .map((minute) => ({ hour: answer.hour, minute })),
-    random,
-  );
-  const sameMinutePool = shuffle(
-    HOURS.filter((hour) => hour !== answer.hour).map((hour) => ({
-      hour,
-      minute: answer.minute,
-    })),
-    random,
-  );
-
-  // 先取 2 个同钟点的干扰项（"几点"对、"几分"错），再补同分钟不同钟点的。
+  // distractorTiers 已经按"越难排除越靠前"排好，取前 3 个不同的即可；
+  // 选项顺序最后统一打乱，所以同层的先后不影响出题。
   const chosen: TimeValue[] = [];
   const used = new Set<string>([timeKey(answer)]);
-  const wantSameHour = Math.min(sameHourPool.length, 2);
-
-  for (const candidate of sameHourPool.slice(0, wantSameHour)) {
+  for (const candidate of distractorTiers(level, answer)) {
+    if (chosen.length >= 3) break;
+    if (used.has(timeKey(candidate))) continue;
     chosen.push(candidate);
     used.add(timeKey(candidate));
-  }
-  for (const pool of [sameMinutePool, sameHourPool]) {
-    for (const candidate of pool) {
-      if (chosen.length >= 3) break;
-      if (used.has(timeKey(candidate))) continue;
-      chosen.push(candidate);
-      used.add(timeKey(candidate));
-    }
   }
 
   return {
