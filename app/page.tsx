@@ -1,4 +1,5 @@
 import { hasSupabaseEnv } from "@/lib/supabaseEnv";
+import ClockReadingLink from "./clock-reading/ClockReadingLink";
 import PracticeModes from "./components/PracticeModes";
 import SightReaderLink from "./sight-reader/SightReaderLink";
 import "./page.css";
@@ -31,6 +32,14 @@ export default async function Home() {
         <h2>Sight Reader</h2>
         <p>五线谱辨识：从 C D E F G A B 里选音名，共 10 题并打分。</p>
         <SightReaderLink />
+      </section>
+
+      <hr />
+
+      <section>
+        <h2>认时钟</h2>
+        <p>看钟面读时间，练习整点、半点与 5 分钟刻度，每轮 10 题。</p>
+        <ClockReadingLink />
       </section>
     </main>
   );
